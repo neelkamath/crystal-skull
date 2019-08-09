@@ -16,7 +16,7 @@
   },
   "servers": [
     {
-      "url": "https://crystall-skull.herokuapp.com",
+      "url": "https://crystal-skull.herokuapp.com",
       "description": "This is a temporary development server which may be offline or serving a different API in the future."
     }
   ],
@@ -118,6 +118,7 @@
   "components": {
     "schemas": {
       "Question": {
+        "description": "Multiple choice question and answer",
         "type": "object",
         "properties": {
           "question": {
