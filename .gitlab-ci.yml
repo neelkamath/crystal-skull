@@ -1,17 +1,24 @@
-image: zenika/kotlin:1.3.31-jdk8
+build:
+  stage: build
+  image: zenika/kotlin:1.3.31-jdk8
+  script: ./gradlew build
+  artifacts:
+    paths:
+      - build/libs/crystal-skull-all.jar
 
 test:
+  image: zenika/kotlin:1.3.31-jdk8
   script: ./gradlew test
 
 spec:
-  image: node:10
+  image: node
   script:
     - npm i -g @stoplight/spectral
     - spectral lint spec.oas3.json
 
 pages:
   stage: deploy
-  image: node:10
+  image: node
   script:
     - npm i -g redoc-cli
     - redoc-cli bundle spec.oas3.json
@@ -27,11 +34,10 @@ heroku:
   # stage: deploy
   image: docker
   script:
-    - ./gradlew build
     - echo $HEROKU_AUTH_TOKEN | docker login --username=_ --password-stdin registry.heroku.com
     - docker build -t crystal-skull .
     - docker tag crystal-skull registry.heroku.com/$HEROKU_APP/web
-      $ docker push registry.heroku.com/$HEROKU_APP/web
+    - docker push registry.heroku.com/$HEROKU_APP/web
     - chmod +x release.sh
     - ./release.sh
     # only:
