@@ -1,4 +1,4 @@
-# This block is for the workaround: https://forum.gitlab.com/t/docker-dind-stops-working-after-12-1-0-update/28664/4
+# This block is a workaround for https://forum.gitlab.com/t/docker-dind-stops-working-after-12-1-0-update/28664/4.
 services:
   - name: docker:dind
     entrypoint: ["env", "-u", "DOCKER_HOST"]
@@ -9,13 +9,30 @@ variables:
   # See https://github.com/docker-library/docker/pull/166
   DOCKER_TLS_CERTDIR: ""
 
-build-jar:
+jar:
   stage: build
   image: zenika/kotlin:1.3.31-jdk8
   script: ./gradlew build
   artifacts:
     paths:
       - build/libs/crystal-skull-all.jar
+
+push-image:
+  stage: build
+  image: docker:dind
+  script:
+    - echo $HEROKU_AUTH_TOKEN | docker login --username=_ --password-stdin registry.heroku.com
+    - docker build -t crystal-skull .
+    - docker tag crystal-skull registry.heroku.com/$HEROKU_APP/web # TODO: See if you can get rid of this line.
+    - docker push registry.heroku.com/$HEROKU_APP/web
+    - "echo $(docker inspect registry.heroku.com/$HEROKU_APP/web --format='{{.Id}}') > image_id.txt"
+  artifacts:
+    paths:
+      - image_id.txt
+  dependencies:
+    - jar
+    # only:
+    # - master
 
 test-server:
   image: zenika/kotlin:1.3.31-jdk8
@@ -41,15 +58,10 @@ pages:
   only:
     - master
 
-deploy:
+release-image:
   # stage: deploy
-  image: appropriate/curl
-  script:
-    - echo $HEROKU_AUTH_TOKEN | docker login --username=_ --password-stdin registry.heroku.com
-    - docker build -t crystal-skull .
-    - docker tag crystal-skull registry.heroku.com/$HEROKU_APP/web # TODO: See if you can get rid of this line.
-    - docker push registry.heroku.com/$HEROKU_APP/web
-    - "imageId=$(docker inspect registry.heroku.com/$HEROKU_APP/web --format='{{.Id}}')" # TODO: Don't use variables; inline.
+  script: # TODO: Don't use variables; inline.
+    - imageId=$(cat image_id.txt)
     - >
       payload='{"updates":[{"type":"web","docker_image":"'"$imageId"'"}]}'
     - >
