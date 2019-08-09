@@ -9,7 +9,7 @@ variables:
   # See https://github.com/docker-library/docker/pull/166
   DOCKER_TLS_CERTDIR: ""
 
-build:
+build-jar:
   stage: build
   image: zenika/kotlin:1.3.31-jdk8
   script: ./gradlew build
@@ -21,7 +21,7 @@ test:
   image: zenika/kotlin:1.3.31-jdk8
   script: ./gradlew test
 
-spec:
+test-spec:
   image: node
   script:
     - npm i -g @stoplight/spectral
@@ -43,7 +43,7 @@ pages:
 
 deploy:
   # stage: deploy
-  image: docker:19.03.1-dind
+  image: curl
   script:
     - echo $HEROKU_AUTH_TOKEN | docker login --username=_ --password-stdin registry.heroku.com
     - docker build -t crystal-skull .
