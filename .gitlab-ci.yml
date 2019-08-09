@@ -66,6 +66,7 @@ pages:
 
 release-image:
   # stage: deploy
+  image: appropriate/curl
   script: # TODO: Don't use variables; inline.
     - imageId=$(cat image_id.txt)
     - >
