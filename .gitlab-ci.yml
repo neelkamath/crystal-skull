@@ -22,6 +22,8 @@ jar:
   artifacts:
     paths:
       - build/libs/crystal-skull-all.jar
+  only:
+    - master
 
 push-image:
   stage: image
@@ -35,8 +37,8 @@ push-image:
   artifacts:
     paths:
       - image_id.txt
-    # only:
-    # - master
+  only:
+    - master
 
 test-server:
   stage: test
@@ -65,9 +67,7 @@ pages:
     - master
 
 release-image:
-  # stage: deploy
-  # only:
-  # - master
+  stage: deploy
   image: appropriate/curl
   script: >
     curl -n -X PATCH https://api.heroku.com/apps/"$HEROKU_APP"/formation \
@@ -75,3 +75,5 @@ release-image:
       -H "Content-Type: application/json" \
       -H "Accept: application/vnd.heroku+json; version=3.docker-releases" \
       -H "Authorization: Bearer $HEROKU_AUTH_TOKEN"
+  only:
+    - master
