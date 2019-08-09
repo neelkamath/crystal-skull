@@ -1,6 +1,6 @@
 #!/bin/bash
 
-imageId=$(docker inspect registry.heroku.com/"$HEROKU_APP"/web --format='{{.Id}}')
+imageId=$(docker inspect crystal-skull --format='{{.Id}}')
 payload='{"updates":[{"type":"web","docker_image":"'"$imageId"'"}]}'
 curl -n -X PATCH https://api.heroku.com/apps/"$HEROKU_APP"/formation \
   -d "$payload" \

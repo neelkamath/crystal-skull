@@ -26,6 +26,8 @@ heroku:
   # stage: deploy
   image: zenika/kotlin:1.3.31-jdk8
   script:
+    - ./gradlew build
+    - docker build -t crystal-skull .
     - chmod +x release.sh
     - ./release.sh
     # only:

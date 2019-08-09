@@ -33,7 +33,7 @@ The server will be running at `localhost:8080`, and has automatic reload enabled
 
 ### Deploying
 
-The server doesn't require any platform or vendor specific code, files, tools, or commands since it has been containerized.
+The project neither contains nor needs any platform or vendor specific code, files, tools, or commands since it has been containerized.
 
 ### Generating an SDK
 
