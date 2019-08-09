@@ -29,7 +29,6 @@ push-image:
   script:
     - echo $HEROKU_AUTH_TOKEN | docker login --username=_ --password-stdin registry.heroku.com
     - docker build -t crystal-skull .
-    - docker tag crystal-skull registry.heroku.com/$HEROKU_APP/web # TODO: See if you can get rid of this line.
     - docker push registry.heroku.com/$HEROKU_APP/web
     - "echo $(docker inspect registry.heroku.com/$HEROKU_APP/web --format='{{.Id}}') > image_id.txt"
   artifacts:
@@ -66,15 +65,12 @@ pages:
 
 release-image:
   # stage: deploy
+  # only:
+  # - master
   image: appropriate/curl
-  script:
-    - >
-      payload='{"updates":[{"type":"web","docker_image":"'"$(cat image_id.txt)"'"}]}'
-    - >
-      curl -n -X PATCH https://api.heroku.com/apps/"$HEROKU_APP"/formation \
-        -d "$payload" \
-        -H "Content-Type: application/json" \
-        -H "Accept: application/vnd.heroku+json; version=3.docker-releases" \
-        -H "Authorization: Bearer $HEROKU_AUTH_TOKEN"
-    # only:
-    # - master
+  script: >
+    curl -n -X PATCH https://api.heroku.com/apps/"$HEROKU_APP"/formation \
+      -d '{"updates":[{"type":"web","docker_image":"'"$(cat image_id.txt)"'"}]}' \
+      -H "Content-Type: application/json" \
+      -H "Accept: application/vnd.heroku+json; version=3.docker-releases" \
+      -H "Authorization: Bearer $HEROKU_AUTH_TOKEN"
