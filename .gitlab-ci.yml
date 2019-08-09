@@ -32,11 +32,11 @@ pages:
 
 heroku:
   # stage: deploy
-  image: docker
+  image: docker:19.03.1-dind
   script:
     - echo $HEROKU_AUTH_TOKEN | docker login --username=_ --password-stdin registry.heroku.com
     - docker build -t crystal-skull .
-    - docker tag crystal-skull registry.heroku.com/$HEROKU_APP/web
+    - docker tag crystal-skull registry.heroku.com/$HEROKU_APP/web # TODO: See if you can get rid of this line.
     - docker push registry.heroku.com/$HEROKU_APP/web
     - chmod +x release.sh
     - ./release.sh
