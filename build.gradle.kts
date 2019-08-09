@@ -1,6 +1,7 @@
 plugins {
     kotlin("jvm") version "1.3.41"
     application
+    id("com.github.johnrengelman.shadow") version "5.0.0"
 }
 
 application.mainClassName = "io.ktor.server.netty.EngineMain"
@@ -24,3 +25,5 @@ kotlin.sourceSets {
     getByName("main").kotlin.srcDirs("src/main")
     getByName("test").kotlin.srcDirs("src/test")
 }
+
+tasks.withType<Jar> { manifest { attributes(mapOf("Main-Class" to application.mainClassName)) } }
