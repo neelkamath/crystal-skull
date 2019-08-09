@@ -18,7 +18,7 @@ Substitute `<GRADLE>` with `gradlew.bat` on Windows and `./gradlew` on others.
 
 `<GRADLE> -t build & <GRADLE> run`
 
-The server will be running at `localhost:8080`, and has automatic reload enabled (i.e., the server needn't be recompiled when the code has been updated).
+The server will be running at `localhost:8080`, and has automatic reload enabled (i.e., the server needn't be recompiled when the code has been updated). You can change the port by setting the `PORT` environment variable.
 
 #### Testing
 
@@ -29,7 +29,7 @@ The server will be running at `localhost:8080`, and has automatic reload enabled
 
 1. `<GRADLE> build`
 1. `docker build -t crystal-skull .`
-1. Run at `http://localhost:8080`: `docker run -itp 8080:8080 --rm crystal-skull`
+1. Run at `http://localhost:8080` with `docker run -itp 8080:8080 --rm crystal-skull`. You can change the port by setting the `PORT` environment variable.
 
 ### Deploying
 

@@ -67,10 +67,9 @@ pages:
 release-image:
   # stage: deploy
   image: appropriate/curl
-  script: # TODO: Don't use variables; inline.
-    - imageId=$(cat image_id.txt)
+  script:
     - >
-      payload='{"updates":[{"type":"web","docker_image":"'"$imageId"'"}]}'
+      payload='{"updates":[{"type":"web","docker_image":"'"$(cat image_id.txt)"'"}]}'
     - >
       curl -n -X PATCH https://api.heroku.com/apps/"$HEROKU_APP"/formation \
         -d "$payload" \
