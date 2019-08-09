@@ -17,7 +17,7 @@ build-jar:
     paths:
       - build/libs/crystal-skull-all.jar
 
-test:
+test-server:
   image: zenika/kotlin:1.3.31-jdk8
   script: ./gradlew test
 
@@ -43,7 +43,7 @@ pages:
 
 deploy:
   # stage: deploy
-  image: curl
+  image: appropriate/curl
   script:
     - echo $HEROKU_AUTH_TOKEN | docker login --username=_ --password-stdin registry.heroku.com
     - docker build -t crystal-skull .
