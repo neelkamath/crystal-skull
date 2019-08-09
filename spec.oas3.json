@@ -1,0 +1,149 @@
+{
+  "openapi": "3.0.2",
+  "info": {
+    "title": "Crystal Skull API",
+    "version": "0.1.0",
+    "description": "Generates a complete quiz using just a topic name",
+    "contact": {
+      "name": "Neel Kamath",
+      "email": "neelkamath@icloud.com",
+      "url": "https://neelkamath.com"
+    },
+    "license": {
+      "name": "MIT",
+      "url": "https://opensource.org/licenses/MIT"
+    }
+  },
+  "servers": [
+    {
+      "url": "https://crystall-skull.herokuapp.com",
+      "description": "This is a temporary development server which may be offline or serving a different API in the future."
+    }
+  ],
+  "paths": {
+    "/search": {
+      "get": {
+        "tags": [
+          "search"
+        ],
+        "description": "Searches for topic names to generate a quiz on (e.g., searching `appl` would give back results for the fruit, tech company, etc.)",
+        "operationId": "searchTopics",
+        "parameters": [
+          {
+            "name": "query",
+            "in": "query",
+            "description": "Topics to search for",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Names and descriptions of topics",
+            "content": {
+              "application/json": {
+                "example": {
+                  "Apple Inc.": "Apple Inc. is an American multinational technology company headquartered in Cupertino, California, that designs, develops, and sells consumer electronics, computer software, and online services.",
+                  "Apple": "An apple is a sweet, edible fruit produced by an apple tree (Malus domestica). Apple trees are cultivated worldwide and are the most widely grown species in the genus Malus."
+                },
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/quiz": {
+      "get": {
+        "tags": [
+          "quiz"
+        ],
+        "description": "This generates an entire quiz using just a topic name. You should get the topic name from `/search`.",
+        "operationId": "generateQuiz",
+        "parameters": [
+          {
+            "name": "topic",
+            "in": "query",
+            "description": "Topic to generate the quiz on",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Generated quiz",
+            "content": {
+              "application/json": {
+                "example": {
+                  "quiz": [
+                    {
+                      "question": "An apple tree's binomial name is _____.",
+                      "options": [
+                        "Malus sieversii",
+                        "Malus domestica",
+                        "Pyrus sieversii",
+                        "Citrus reticulata"
+                      ],
+                      "answer": "Malus domestica"
+                    }
+                  ]
+                },
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "quiz": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/Question"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Question": {
+        "type": "object",
+        "properties": {
+          "question": {
+            "description": "Five consecutive underscores (`_____`) denote where the answer is to be filled in.",
+            "type": "string"
+          },
+          "options": {
+            "description": "Possible answers",
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "minItems": 4,
+            "maxItems": 4
+          },
+          "answer": {
+            "description": "Correct option",
+            "type": "string"
+          }
+        },
+        "required": [
+          "question",
+          "options",
+          "answer"
+        ]
+      }
+    }
+  }
+}

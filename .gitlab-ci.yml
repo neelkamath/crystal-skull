@@ -1,0 +1,23 @@
+spec:
+  image: node:10
+  script:
+    - npm i -g @stoplight/spectral
+    - spectral lint spec.oas3.json
+
+pages:
+  image: node:10
+  stage: deploy
+  script:
+    - npm i -g redoc-cli
+    - redoc-cli bundle spec.oas3.json
+    - mkdir public
+    - mv redoc-static.html public/index.html
+  artifacts:
+    paths:
+      - public
+  only:
+    - master
+
+test:
+  image: zenika/kotlin:1.3.31-jdk8
+  script: ./gradlew test

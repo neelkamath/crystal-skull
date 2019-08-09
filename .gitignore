@@ -1,0 +1,6 @@
+crystal-skull/
+.gradle/
+build/
+.idea/
+redoc-static.html
+public/
