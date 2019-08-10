@@ -26,12 +26,13 @@
         "tags": [
           "search"
         ],
-        "description": "Searches for topic names to generate a quiz on (e.g., searching `appl` would give back results for the fruit, tech company, etc.)",
+        "description": "Searches for topic names to generate a quiz on",
         "operationId": "searchTopics",
         "parameters": [
           {
             "name": "query",
             "in": "query",
+            "example": "appl",
             "description": "Topics to search for",
             "required": true,
             "schema": {
@@ -71,6 +72,7 @@
           {
             "name": "topic",
             "in": "query",
+            "example": "Apple",
             "description": "Topic to generate the quiz on",
             "required": true,
             "schema": {
