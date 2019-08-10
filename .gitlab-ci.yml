@@ -10,10 +10,22 @@ variables:
   DOCKER_TLS_CERTDIR: ""
 
 stages:
+  - test
   - jar
   - image
-  - test
   - deploy
+
+test-server:
+  stage: test
+  image: zenika/kotlin:1.3.31-jdk8
+  script: ./gradlew test
+
+test-spec:
+  stage: test
+  image: node
+  script:
+    - npm i -g @stoplight/spectral
+    - spectral lint spec.oas3.json
 
 jar:
   stage: jar
@@ -39,18 +51,6 @@ push-image:
       - image_id.txt
   only:
     - master
-
-test-server:
-  stage: test
-  image: zenika/kotlin:1.3.31-jdk8
-  script: ./gradlew test
-
-test-spec:
-  stage: test
-  image: node
-  script:
-    - npm i -g @stoplight/spectral
-    - spectral lint spec.oas3.json
 
 pages:
   stage: deploy
