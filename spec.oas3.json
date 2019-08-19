@@ -3,7 +3,7 @@
   "info": {
     "title": "Crystal Skull API",
     "version": "0.1.0",
-    "description": "Generates a complete quiz using just a topic name",
+    "description": "This API generates an entire quiz in English with just a topic name, or even nothing at all for a random one!",
     "contact": {
       "name": "Neel Kamath",
       "email": "neelkamath@icloud.com",
@@ -26,7 +26,7 @@
         "tags": [
           "search"
         ],
-        "description": "Searches for topic names to generate a quiz on",
+        "description": "Searches for topics to generate a quiz on",
         "operationId": "searchTopics",
         "parameters": [
           {
@@ -49,11 +49,11 @@
                   "example": {
                     "topics": [
                       {
-                        "name": "Apple",
+                        "topic": "Apple",
                         "description": "An apple is a sweet, edible fruit produced by an apple tree (Malus domestica). Apple trees are cultivated worldwide and are the most widely grown species in the genus Malus."
                       },
                       {
-                        "name": "Apple Inc.",
+                        "topic": "Apple Inc.",
                         "description": "Apple Inc. is an American multinational technology company headquartered in Cupertino, California, that designs, develops, and sells consumer electronics, computer software, and online services."
                       }
                     ]
@@ -65,7 +65,7 @@
                       "items": {
                         "type": "object",
                         "properties": {
-                          "name": {
+                          "topic": {
                             "description": "Topic name",
                             "type": "string"
                           },
@@ -75,7 +75,7 @@
                           }
                         },
                         "required": [
-                          "name",
+                          "topic",
                           "description"
                         ]
                       }
@@ -96,48 +96,67 @@
         "tags": [
           "generate"
         ],
-        "description": "This generates an entire quiz containing fill-in-the-blank questions using just a topic name. You should get the topic name from GET `/search`.",
+        "description": "This generates an entire quiz containing fill-in-the-blank questions for either a random topic, or the one specified.",
         "operationId": "generateQuiz",
         "requestBody": {
-          "description": "The topic to generate the quiz on, and the type of questions to generate",
+          "description": "Configures how the quiz will be generated",
           "content": {
             "application/json": {
               "schema": {
                 "example": {
                   "topic": "Apple Inc.",
-                  "types": [
-                    "date",
-                    "organization",
-                    "person"
-                  ]
+                  "configuration": {
+                    "types": [
+                      "date",
+                      "organization",
+                      "person"
+                    ]
+                  }
                 },
                 "type": "object",
                 "properties": {
                   "topic": {
-                    "description": "Topic to generate the quiz on",
+                    "description": "This is the topic to generate the quiz on. You should get it from performing an HTTP GET request to the `/search` endpoint. If nothing is specified, a random topic is chosen.",
                     "type": "string"
                   },
-                  "types": {
-                    "description": "These are the types of questions generated. The possible values are `\"date\"`, `\"location\"`, `\"money\"`, `\"organization\"`, `\"percentage\"`, `\"person\"`, and `\"time\"`.",
-                    "default": [
-                      "date",
-                      "location",
-                      "organization",
-                      "person"
-                    ],
-                    "type": "array",
-                    "items": {
-                      "type": "string"
+                  "configuration": {
+                    "type": "object",
+                    "description": "Configures the the quiz generator",
+                    "properties": {
+                      "types": {
+                        "description": "These are the types of questions generated. The possible values are `\"date\"`, `\"location\"`, `\"money\"`, `\"organization\"`, `\"percentage\"`, `\"person\"`, and `\"time\"`.",
+                        "default": [
+                          "date",
+                          "location",
+                          "organization",
+                          "person"
+                        ],
+                        "minItems": 1,
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        }
+                      },
+                      "duplicateAnswers": {
+                        "description": "This states whether the quiz may include more than one question having the same answer. For example, one question may be `Apple Computer Company was founded by _____.`, and another would be `Apple purchased NeXT for its NeXTSTEP operating system and to bring _____ back.`. Although both the questions are different (and would have different options), both their answers are `Steve Jobs`.",
+                        "type": "boolean",
+                        "default": false
+                      },
+                      "duplicateSentences": {
+                        "default": false,
+                        "description": "This states whether to include multiple questions from the same sentence. Take the sentence `Apple was founded by Steve Jobs in April 1976.` for example. Two questions may be generated from this, one being `Apple was founded by _____ in April 1976.` (where the answer is `Steve Jobs`), and another might be `Apple was founded by Steve Jobs in _____.` (where the answer is `April 1976`). Although the questions and answers (and hence, options) are different, they are based on the same sentence. This has the potential of making the quiz slightly boring, or having certain questions too easy since the user already knows the answer to the next duplicate sentence because they have read the rest of the same sentence in a previous question.",
+                        "type": "boolean"
+                      }
                     }
+                  },
+                  "max": {
+                    "description": "The maximum number of questions to return",
+                    "type": "integer"
                   }
-                },
-                "required": [
-                  "topic"
-                ]
+                }
               }
             }
-          },
-          "required": true
+          }
         },
         "responses": {
           "200": {
@@ -146,46 +165,65 @@
               "application/json": {
                 "schema": {
                   "example": {
+                    "topic": "Apple Inc.",
                     "quiz": [
                       {
-                        "question": "In 1996, Spindler was replaced by _____ as CEO.",
-                        "options": [
-                          "Steve Jobs",
-                          "Gil Amelio",
-                          "Steve Wozniak",
-                          "Ronald Wayne"
-                        ],
-                        "answer": "Gil Amelio",
+                        "questionAnswer": {
+                          "question": "In 1996, Spindler was replaced by _____ as CEO.",
+                          "options": [
+                            "Steve Jobs",
+                            "Gil Amelio",
+                            "Steve Wozniak",
+                            "Ronald Wayne"
+                          ],
+                          "answer": "Gil Amelio"
+                        },
                         "type": "person"
                       }
-                    ]
+                    ],
+                    "url": "https://en.wikipedia.org/wiki/Apple_Inc."
                   },
                   "type": "object",
                   "properties": {
+                    "topic": {
+                      "description": "The topic used to generate the quiz",
+                      "type": "string"
+                    },
                     "quiz": {
                       "type": "array",
                       "items": {
                         "type": "object",
                         "properties": {
-                          "question": {
-                            "description": "Five consecutive underscores (`_____`) denote where the answer is to be filled in.",
-                            "type": "string"
-                          },
-                          "options": {
-                            "description": "Possible answers",
-                            "type": "array",
-                            "items": {
-                              "type": "string"
+                          "questionAnswer": {
+                            "description": "A multiple choice question containing four choices and one correct answer",
+                            "type": "object",
+                            "properties": {
+                              "question": {
+                                "description": "Five consecutive underscores (`_____`) denote where the answer is to be filled in.",
+                                "type": "string"
+                              },
+                              "options": {
+                                "description": "Possible answers",
+                                "type": "array",
+                                "items": {
+                                  "type": "string"
+                                },
+                                "minItems": 4,
+                                "maxItems": 4
+                              },
+                              "answer": {
+                                "description": "Correct option",
+                                "type": "string"
+                              }
                             },
-                            "minItems": 4,
-                            "maxItems": 4
-                          },
-                          "answer": {
-                            "description": "Correct option",
-                            "type": "string"
+                            "required": [
+                              "question",
+                              "answer",
+                              "options"
+                            ]
                           },
                           "type": {
-                            "description": "Question type",
+                            "description": "Type of question",
                             "type": "string",
                             "enum": [
                               "date",
@@ -199,14 +237,21 @@
                           }
                         },
                         "required": [
-                          "question",
-                          "options",
-                          "answer",
+                          "questionAnswer",
                           "type"
                         ]
                       }
+                    },
+                    "url": {
+                      "description": "URL of the Wikipedia page used to generate the quiz",
+                      "type": "string"
                     }
-                  }
+                  },
+                  "required": [
+                    "topic",
+                    "quiz",
+                    "url"
+                  ]
                 }
               }
             }

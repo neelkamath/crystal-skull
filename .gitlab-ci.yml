@@ -17,7 +17,7 @@ stages:
 
 test-server:
   stage: test
-  image: zenika/kotlin:1.3.31-jdk8
+  image: zenika/kotlin:1.3.41-jdk8
   script: ./gradlew test
 
 test-spec:
@@ -29,7 +29,7 @@ test-spec:
 
 jar:
   stage: jar
-  image: zenika/kotlin:1.3.31-jdk8
+  image: zenika/kotlin:1.3.41-jdk8
   script: ./gradlew build
   artifacts:
     paths:
@@ -57,9 +57,7 @@ pages:
   image: node
   script:
     - npm i -g redoc-cli
-    - redoc-cli bundle spec.oas3.json
-    - mkdir public
-    - mv redoc-static.html public/index.html
+    - redoc-cli bundle spec.oas3.json -o public/index.html --title 'Crystal Skull'
   artifacts:
     paths:
       - public

@@ -1,5 +1,5 @@
 plugins {
-    kotlin("jvm") version "1.3.31"
+    kotlin("jvm") version "1.3.41"
     application
     id("com.github.johnrengelman.shadow") version "5.0.0"
 }
@@ -14,7 +14,9 @@ dependencies {
     implementation("io.ktor:ktor-server-netty:$ktorVersion")
     implementation("io.ktor:ktor-gson:$ktorVersion")
     implementation("ch.qos.logback:logback-classic:1.2.3")
-    implementation("com.neelkamath.kwikipedia:kwikipedia:0.1.3")
+    implementation("com.neelkamath.kwikipedia:kwikipedia:0.3.0")
+    implementation("org.apache.opennlp:opennlp-tools:1.9.1")
+    implementation("com.github.javafaker:javafaker:1.0.0")
     implementation(kotlin("stdlib-jdk8"))
     testImplementation(kotlin("test"))
     testImplementation(kotlin("test-junit"))
