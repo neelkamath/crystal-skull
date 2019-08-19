@@ -37,17 +37,14 @@ internal data class QuizRequest(
  * Jobs in _____.` (where the answer is `April 1976`).
  */
 internal data class QuizConfiguration(
-    val types: List<NamedEntity> = listOf("date", "location", "organization", "person"),
+    val types: List<NamedEntity> =
+        listOf(NamedEntity.date, NamedEntity.location, NamedEntity.organization, NamedEntity.person),
     val duplicateAnswers: Boolean = false,
     val duplicateSentences: Boolean = false
 )
 
-/**
- * The type of entity for NLP named entity recognition.
- *
- * It must be `"date"`, `"location"`, `"money"`, `"organization"`, `"percentage"`, `"person"`, or `"time"`.
- */
-internal typealias NamedEntity = String
+/** The type of entity for NLP named entity recognition. */
+internal enum class NamedEntity { date, location, money, organization, percentage, person, time }
 
 /** A [quiz] on [topic] generated from [url]. */
 internal data class QuizResponse(val topic: String, val quiz: List<QuizQuestion>, val url: String)

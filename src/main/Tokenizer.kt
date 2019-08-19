@@ -42,7 +42,7 @@ internal fun findNames(documents: List<Document>, entity: NamedEntity): List<Pro
 /** Converts the [spans] belonging to the same [Span.type] of a [tokenizedSentence]. */
 private fun process(tokenizedSentence: TokenizedSentence, spans: List<Span>): ProcessedSentence = ProcessedSentence(
     tokenizedSentence.sentence,
-    spans[0].type,
+    NamedEntity.valueOf(spans[0].type),
     spans.map { span ->
         tokenizedSentence
             .tokens

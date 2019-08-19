@@ -47,24 +47,29 @@ class QuizTest {
     fun `Generating a quiz for a particular topic must return the correct source page's URL`() =
         assertEquals("https://en.wikipedia.org/wiki/John_Mayer_Trio", post(QuizRequest("John Mayer Trio")).url)
 
+    // 119
     @Test
-    fun `A quiz generated without configuration must only contain the default types of questions`() {
-        val types = post(QuizRequest("Apple Inc.")).quiz.map { it.type }.toSet()
-        assertTrue(listOf("date", "location", "organization", "person").containsAll(types), "Actual types: $types")
-    }
+    fun `A quiz generated without configuration must only contain the default types of questions`() =
+        post(QuizRequest("Apple Inc.")).quiz.map { it.type }.toSet().let {
+            assertTrue(
+                listOf(NamedEntity.date, NamedEntity.location, NamedEntity.organization, NamedEntity.person)
+                    .containsAll(it),
+                "Actual types: $it"
+            )
+        }
 
     @Test
     fun `A quiz generated with a configuration must only contain certain types of questions`() {
-        val requestedTypes = listOf("date", "money")
+        val requestedTypes = listOf(NamedEntity.date, NamedEntity.money)
         val types = post(QuizRequest("Apple Inc.", QuizConfiguration(requestedTypes))).quiz.map { it.type }.toSet()
         assertTrue(requestedTypes.containsAll(types), "Actual types: $types")
     }
 
     @Test
-    fun `A quiz mustn't contain duplicate answers by default`() {
-        val answers = post(QuizRequest("Apple Inc.")).quiz.map { it.questionAnswer.answer }
-        assertEquals(answers.toSet().size, answers.size, "Questions with duplicate answers")
-    }
+    fun `A quiz mustn't contain duplicate answers by default`() =
+        post(QuizRequest("Apple Inc.")).quiz.map { it.questionAnswer.answer }.run {
+            assertEquals(toSet().size, size, "Questions with duplicate answers")
+        }
 
     @Test
     fun `The quiz mustn't contain more questions than what was asked for`() =
@@ -97,10 +102,10 @@ class QuestionGeneratorTest {
         if (duplicateAnswers) 2 else 1,
         generateQuestions(
             listOf(
-                ProcessedSentence("Bob is the CEO of KYS.", "person", listOf("Bob")),
-                ProcessedSentence("Bob works at KYS.", "person", listOf("Bob"))
+                ProcessedSentence("Bob is the CEO of KYS.", NamedEntity.person, listOf("Bob")),
+                ProcessedSentence("Bob works at KYS.", NamedEntity.person, listOf("Bob"))
             ),
-            QuizConfiguration(listOf("person"), duplicateAnswers)
+            QuizConfiguration(listOf(NamedEntity.person), duplicateAnswers)
         ).map { it.questionAnswer.answer }.size
     )
 

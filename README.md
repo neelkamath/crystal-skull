@@ -6,7 +6,7 @@ For developers who want to build an innovative quiz app, Crystal Skull is a serv
 
 The name _Crystal Skull_ comes from the movie _[Indiana Jones and the Kingdom of the Crystal Skull](https://www.imdb.com/title/tt0367882/)_. The movie shows an alien with a crystal skull who seems to have knowledge on everything. This program, too, seems to have knowledge on everything 😉.
 
-You can view the HTTP API [docs](https://neelkamath.gitlab.io/crystal-skull/).
+You can view the HTTP API docs [here](https://neelkamath.gitlab.io/crystal-skull/).
 
 If you're forking the repo to develop the project as your own and not just to send back a PR, follow [these steps](docs/fork.md).
 
@@ -43,7 +43,7 @@ A Dockerfile is used to run the server in production. Follow these steps to test
 
 ### Documentation
 
-### Developing
+#### Developing
 
 `redoc-cli serve spec.oas3.json -wp 6969`
 
@@ -51,7 +51,7 @@ Open `http://127.0.0.1:6969` in your browser. The documentation will automatical
 
 We use port `6969` instead of the default `8080` because the development server usually uses that.
 
-### Production
+#### Production
 
 `redoc-cli bundle spec.oas3.json -o public/index.html --title 'Crystal Skull'`
 

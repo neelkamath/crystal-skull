@@ -36,20 +36,19 @@ private fun ask(processed: ProcessedSentence, options: Set<String>, answer: Stri
 /** Generates a fake name for an [entity]. */
 internal fun getRandomEntity(entity: NamedEntity): String = with(Faker()) {
     when (entity) {
-        "date" -> {
+        NamedEntity.date -> {
             val month = Month.values().random().getDisplayName(TextStyle.FULL, Locale.US)
             "$month ${(1..28).random()}, ${(1950..2020).random()}"
         }
-        "location" -> with(address()) { listOf(city(), cityName(), country(), state()).random() }
-        "money" -> "$${commerce().price()}"
-        "organization" -> company().name()
-        "percentage" -> {
+        NamedEntity.location -> with(address()) { listOf(city(), cityName(), country(), state()).random() }
+        NamedEntity.money -> "$${commerce().price()}"
+        NamedEntity.organization -> company().name()
+        NamedEntity.percentage -> {
             val integer = (1..100).random()
             listOf("$integer%", "$integer.${(0..99).random()}%").random()
         }
-        "person" -> name().name()
-        "time" -> getRandomTime()
-        else -> throw Error("Invalid entity")
+        NamedEntity.person -> name().name()
+        NamedEntity.time -> getRandomTime()
     }
 }
 
