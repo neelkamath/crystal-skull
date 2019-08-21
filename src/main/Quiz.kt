@@ -27,7 +27,8 @@ internal fun createQuestions(
 private fun ask(processed: ProcessedSentence, options: Set<String>, answer: String): QuestionAnswer = QuestionAnswer(
     processed.sentence.replaceFirst(answer, "_____"),
     (options.shuffled().take(3) + answer)
-        .let { it.toMutableSet().apply { while (size < 4) add(getRandomEntity(processed.entity)) } }
+        .toMutableSet()
+        .apply { while (size < 4) add(getRandomEntity(processed.entity)) }
         .shuffled()
         .toSet(),
     answer

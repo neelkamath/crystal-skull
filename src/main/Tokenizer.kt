@@ -48,10 +48,7 @@ private fun process(tokenizedSentence: TokenizedSentence, spans: List<Span>): Pr
             .tokens
             .slice(span.start until span.end)
             .joinToString(" ")
-            .let {
-                if (it.endsWith(" .")) return@let it.replace(Regex("""( \.)$"""), ".")
-                it
-            }
+            .let { if (it.endsWith(" .")) it.replace(Regex("""( \.)$"""), ".") else it }
             .replace(" '", "'")
             .replace(" , ", ", ")
             .replace(" %", "%")

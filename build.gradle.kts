@@ -18,10 +18,11 @@ dependencies {
     implementation("org.apache.opennlp:opennlp-tools:1.9.1")
     implementation("com.github.javafaker:javafaker:1.0.0")
     implementation(kotlin("stdlib-jdk8"))
-    testImplementation(kotlin("test"))
-    testImplementation(kotlin("test-junit"))
     testImplementation("io.ktor:ktor-server-test-host:$ktorVersion")
+    testImplementation("io.kotlintest:kotlintest-runner-junit5:3.3.2")
 }
+
+val test by tasks.getting(Test::class) { useJUnitPlatform { } }
 
 kotlin.sourceSets {
     getByName("main").kotlin.srcDirs("src/main")

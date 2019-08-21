@@ -2,6 +2,11 @@ package com.neelkamath.crystalskull.test
 
 import com.google.gson.Gson
 import com.neelkamath.crystalskull.*
+import io.kotlintest.matchers.collections.shouldContainAll
+import io.kotlintest.matchers.collections.shouldContainExactlyInAnyOrder
+import io.kotlintest.matchers.withClue
+import io.kotlintest.shouldBe
+import io.kotlintest.specs.StringSpec
 import io.ktor.application.Application
 import io.ktor.http.ContentType
 import io.ktor.http.HttpHeaders
@@ -9,26 +14,16 @@ import io.ktor.http.HttpMethod
 import io.ktor.server.testing.handleRequest
 import io.ktor.server.testing.setBody
 import io.ktor.server.testing.withTestApplication
-import kotlin.test.Test
-import kotlin.test.assertEquals
-import kotlin.test.assertTrue
 
-class SearchTest {
-    @Test
-    fun `Searching for "appl" must include the fruit and tech company as results`() =
+class SearchTest : StringSpec({
+    """Searching for "appl" must include the fruit and tech company as results""" {
         withTestApplication(Application::main) {
-            handleRequest(HttpMethod.Get, "search?query=appl").response.run {
-                val results = Gson().fromJson(content, SearchResponse::class.java)
-                assertTrue(
-                    results.topics.map { it.topic }.containsAll(listOf("Apple", "Apple Inc.")),
-                    """
-                        Searching for "appl" must include the fruit and tech company as results
-                        The topics were instead: $results
-                    """.trimIndent()
-                )
-            }
+            val response = handleRequest(HttpMethod.Get, "search?query=appl").response
+            val search = Gson().fromJson(response.content, SearchResponse::class.java).topics.map { it.topic }
+            withClue(search.toString()) { search shouldContainAll listOf("Apple", "Apple Inc.") }
         }
-}
+    }
+})
 
 class QuizTest {
     /** Makes an HTTP POST [request] to the `/quiz` endpoint. */
@@ -39,81 +34,82 @@ class QuizTest {
         }.response.run { Gson().fromJson(content, QuizResponse::class.java) }
     }
 
-    @Test
-    fun `Generating a quiz for a particular topic must return a quiz for the same topic`() =
-        "Apple".let { topic -> assertEquals(topic, post(QuizRequest(topic)).topic) }
+    inner class TopicNameTest : StringSpec({
+        "Generating a quiz for a particular topic must return a quiz for the same topic" {
+            "Apple".let { post(QuizRequest(it)).topic shouldBe it }
+        }
+    })
 
-    @Test
-    fun `Generating a quiz for a particular topic must return the correct source page's URL`() =
-        assertEquals("https://en.wikipedia.org/wiki/John_Mayer_Trio", post(QuizRequest("John Mayer Trio")).url)
+    inner class TopicUrlTest : StringSpec({
+        "Generating a quiz for a particular topic must return the correct source page's URL" {
+            post(QuizRequest("John Mayer Trio")).url shouldBe "https://en.wikipedia.org/wiki/John_Mayer_Trio"
+        }
+    })
 
-    // 119
-    @Test
-    fun `A quiz generated without configuration must only contain the default types of questions`() =
-        post(QuizRequest("Apple Inc.")).quiz.map { it.type }.toSet().let {
-            assertTrue(
-                listOf(NamedEntity.date, NamedEntity.location, NamedEntity.organization, NamedEntity.person)
-                    .containsAll(it),
-                "Actual types: $it"
+    inner class DefaultEntitiesTest : StringSpec({
+        "A quiz generated without configuration must only contain the default types of questions" {
+            post(QuizRequest("Apple Inc.")).quiz.map { it.type }.toSet() shouldContainExactlyInAnyOrder listOf(
+                NamedEntity.date,
+                NamedEntity.location,
+                NamedEntity.organization,
+                NamedEntity.person
             )
         }
+    })
 
-    @Test
-    fun `A quiz generated with a configuration must only contain certain types of questions`() {
-        val requestedTypes = listOf(NamedEntity.date, NamedEntity.money)
-        val types = post(QuizRequest("Apple Inc.", QuizConfiguration(requestedTypes))).quiz.map { it.type }.toSet()
-        assertTrue(requestedTypes.containsAll(types), "Actual types: $types")
-    }
-
-    @Test
-    fun `A quiz mustn't contain duplicate answers by default`() =
-        post(QuizRequest("Apple Inc.")).quiz.map { it.questionAnswer.answer }.run {
-            assertEquals(toSet().size, size, "Questions with duplicate answers")
+    inner class ConfiguredEntitiesTest : StringSpec({
+        "A quiz generated with a configuration must only contain the requested types of questions" {
+            val types = listOf(NamedEntity.date, NamedEntity.money)
+            val response = post(QuizRequest("Apple Inc.", QuizConfiguration(types)))
+            response.quiz.map { it.type }.toSet() shouldContainExactlyInAnyOrder types
         }
+    })
 
-    @Test
-    fun `The quiz mustn't contain more questions than what was asked for`() =
-        3.let { max -> assertEquals(max, post(QuizRequest("Apple Inc.", max = max)).quiz.size) }
+    inner class ConfiguredAnswersTest : StringSpec({
+        "A quiz mustn't contain duplicate answers by default" {
+            post(QuizRequest("Apple Inc.")).quiz.map { it.questionAnswer.answer }.run {
+                withClue("Questions with duplicate answers") { size shouldBe toSet().size }
+            }
+        }
+    })
 
-    @Test
-    fun `A quiz's questions on the same topic must be shuffled`() {
-        val topic = "Apple Inc."
-        val quiz1 = post(QuizRequest(topic))
-        val quiz2 = post(QuizRequest(topic))
-        val getFirstWord = { response: QuizResponse -> response.quiz[0].questionAnswer.question.split(" ")[0] }
-        assertTrue(getFirstWord(quiz1) != getFirstWord(quiz2) || getFirstWord(quiz1) != getFirstWord(quiz2))
-    }
+    inner class QuizSizeTest : StringSpec({
+        "The quiz mustn't contain more questions than what was asked for" {
+            3.let { post(QuizRequest("Apple Inc.", max = it)).quiz.size shouldBe it }
+        }
+    })
 
-    @Test
-    fun `The answers present in the options should be shuffled`() = assertEquals(
-        4,
-        post(QuizRequest("Apple Inc."))
-            .quiz
-            .map { it.questionAnswer }
-            .map { it.options.indexOf(it.answer) }
-            .toSet()
-            .size,
-        "For a large quiz, answers would be present in all the four option positions"
-    )
+    inner class ShuffledOptionsTest : StringSpec({
+        "The answers present in the options should be shuffled" {
+            val questions = post(QuizRequest("Apple Inc.")).quiz.map { it.questionAnswer }
+            withClue("For a large quiz, answers would be present in all the four option positions") {
+                questions.map { it.options.indexOf(it.answer) }.toSet().size shouldBe 4
+            }
+        }
+    })
 }
 
-class QuestionGeneratorTest {
-    private fun test(duplicateAnswers: Boolean) = assertEquals(
-        if (duplicateAnswers) 2 else 1,
-        generateQuestions(
+class DuplicateAnswersTester {
+    private fun test(duplicateAnswers: Boolean) {
+        val questions = generateQuestions(
             listOf(
                 ProcessedSentence("Bob is the CEO of KYS.", NamedEntity.person, listOf("Bob")),
                 ProcessedSentence("Bob works at KYS.", NamedEntity.person, listOf("Bob"))
             ),
             QuizConfiguration(listOf(NamedEntity.person), duplicateAnswers)
-        ).map { it.questionAnswer.answer }.size
-    )
+        )
+        questions.map { it.questionAnswer.answer }.size shouldBe if (duplicateAnswers) 2 else 1
+    }
 
-    @Test
-    fun `Multiple questions with the same answer must be preserved if duplicate answers are allowed`() =
-        test(duplicateAnswers = true)
+    inner class DuplicateAnswersTest : StringSpec({
+        "Multiple questions with the same answer must be preserved if duplicate answers are allowed" {
+            test(duplicateAnswers = true)
+        }
+    })
 
-    @Test
-    fun `Multiple questions with the same answer must'nt be preserved if duplicate answers are'nt allowed`() =
-        test(duplicateAnswers = false)
+    inner class UniqueAnswersTests : StringSpec({
+        "Multiple questions with the same answer must'nt be preserved if duplicate answers are'nt allowed" {
+            test(duplicateAnswers = false)
+        }
+    })
 }
