@@ -56,5 +56,5 @@ internal fun getRandomEntity(entity: NamedEntity): String = with(Faker()) {
 /** Returns a random time (e.g., `"03:47 PM"`). */
 internal fun getRandomTime(): String = with(Calendar.getInstance().apply { time = Faker().date().birthday() }) {
     val format = { value: Int -> "${if (value < 10) "0" else ""}$value" }
-    "${(get(Calendar.HOUR) + 1).let(format)}:${get(Calendar.MINUTE).let(format)} ${listOf("AM", "PM").random()}"
+    "${(format(get(Calendar.HOUR) + 1))}:${format(get(Calendar.MINUTE))} ${listOf("AM", "PM").random()}"
 }

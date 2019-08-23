@@ -1,5 +1,8 @@
 package com.neelkamath.crystalskull
 
+import kotlinx.coroutines.Deferred
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.async
 import opennlp.tools.namefind.NameFinderME
 import opennlp.tools.namefind.TokenNameFinderModel
 import opennlp.tools.sentdetect.SentenceDetectorME
@@ -19,25 +22,35 @@ internal typealias Document = List<TokenizedSentence>
 internal data class ProcessedSentence(val sentence: String, val entity: NamedEntity, val names: List<String>)
 
 /** Runs an English tokenizer on [data]. */
-internal fun tokenize(data: String): List<TokenizedSentence> =
-    SentenceDetectorME(SentenceModel(FileInputStream("src/main/resources/en-sent.bin"))).sentDetect(data).map {
+internal fun tokenizeAsync(data: String): Deferred<List<TokenizedSentence>> = GlobalScope.async {
+    getSentenceDetector().sentDetect(data).map {
         TokenizedSentence(
             it, TokenizerME(TokenizerModel(FileInputStream("src/main/resources/en-token.bin"))).tokenize(it).toList()
         )
     }
+}
+
+/** English sentence detector. */
+private fun getSentenceDetector() = SentenceDetectorME(SentenceModel(FileInputStream("src/main/resources/en-sent.bin")))
 
 /** Parses English [documents] to find [entity]s. Sentences without [entity]s will be discarded. */
-internal fun findNames(documents: List<Document>, entity: NamedEntity): List<ProcessedSentence> =
-    mutableListOf<ProcessedSentence>().also { list ->
-        val finder = NameFinderME(TokenNameFinderModel(FileInputStream("src/main/resources/en-ner-$entity.bin")))
-        for (document in documents) {
-            for (tokenizedSentence in document) {
-                val spans = finder.find(tokenizedSentence.tokens.toTypedArray()).filter { it.prob >= .9 }
-                if (spans.isNotEmpty()) list.add(process(tokenizedSentence, spans))
+internal fun findNamesAsync(documents: List<Document>, entity: NamedEntity): Deferred<List<ProcessedSentence>> =
+    GlobalScope.async {
+        mutableListOf<ProcessedSentence>().also { list ->
+            val finder = getNameFinder(entity)
+            for (document in documents) {
+                for (tokenizedSentence in document) {
+                    val spans = finder.find(tokenizedSentence.tokens.toTypedArray()).filter { it.prob >= .9 }
+                    if (spans.isNotEmpty()) list.add(process(tokenizedSentence, spans))
+                }
+                finder.clearAdaptiveData()
             }
-            finder.clearAdaptiveData()
         }
     }
+
+/** [entity] [NameFinderME]. */
+private fun getNameFinder(entity: NamedEntity) =
+    NameFinderME(TokenNameFinderModel(FileInputStream("src/main/resources/en-ner-$entity.bin")))
 
 /** Converts the [spans] belonging to the same [Span.type] of a [tokenizedSentence]. */
 private fun process(tokenizedSentence: TokenizedSentence, spans: List<Span>): ProcessedSentence = ProcessedSentence(
