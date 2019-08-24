@@ -1,8 +1,5 @@
 package com.neelkamath.crystalskull
 
-import kotlinx.coroutines.Deferred
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.async
 import opennlp.tools.namefind.NameFinderME
 import opennlp.tools.namefind.TokenNameFinderModel
 import opennlp.tools.sentdetect.SentenceDetectorME
@@ -34,17 +31,15 @@ internal fun tokenize(data: String): List<TokenizedSentence> =
     sentenceDetector.value.sentDetect(data).map { TokenizedSentence(it, tokenizer.value.tokenize(it).toList()) }
 
 /** Parses English [documents] to find [entity]s. Sentences without [entity]s will be discarded. */
-internal fun findNamesAsync(documents: List<Document>, entity: NamedEntity): Deferred<List<ProcessedSentence>> =
-    GlobalScope.async {
-        mutableListOf<ProcessedSentence>().also { list ->
-            val finder = nameFinders.getValue(entity).value
-            for (document in documents) {
-                for (tokenizedSentence in document) {
-                    val spans = finder.find(tokenizedSentence.tokens.toTypedArray()).filter { it.prob >= .9 }
-                    if (spans.isNotEmpty()) list.add(process(tokenizedSentence, spans))
-                }
-                finder.clearAdaptiveData()
+internal fun findNames(documents: List<Document>, entity: NamedEntity): List<ProcessedSentence> =
+    mutableListOf<ProcessedSentence>().also { list ->
+        val finder = nameFinders.getValue(entity).value
+        for (document in documents) {
+            for (tokenizedSentence in document) {
+                val spans = finder.find(tokenizedSentence.tokens.toTypedArray()).filter { it.prob >= .9 }
+                if (spans.isNotEmpty()) list.add(process(tokenizedSentence, spans))
             }
+            finder.clearAdaptiveData()
         }
     }
 
