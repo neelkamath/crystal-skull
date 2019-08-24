@@ -35,8 +35,7 @@ private suspend fun postQuiz(context: PipelineContext<Unit, ApplicationCall>) = 
     val (topic, configuration, max) = call.receive<QuizRequest>()
     val documents = getPage(topic)
         .filterKeys { it !in listOf("See also", "References", "Further reading", "External links") }
-        .map { tokenizeAsync(it.value) }
-        .awaitAll()
+        .map { tokenize(it.value) }
     val processedSentences = configuration.types
         .map { findNamesAsync(documents, it) }
         .awaitAll()

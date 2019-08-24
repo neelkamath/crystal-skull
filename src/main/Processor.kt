@@ -21,23 +21,23 @@ internal typealias Document = List<TokenizedSentence>
 /** [names] are the entities (each being an [entity]) fround in the original [sentence]. */
 internal data class ProcessedSentence(val sentence: String, val entity: NamedEntity, val names: List<String>)
 
-/** Runs an English tokenizer on [data]. */
-internal fun tokenizeAsync(data: String): Deferred<List<TokenizedSentence>> = GlobalScope.async {
-    getSentenceDetector().sentDetect(data).map {
-        TokenizedSentence(
-            it, TokenizerME(TokenizerModel(FileInputStream("src/main/resources/en-token.bin"))).tokenize(it).toList()
-        )
-    }
-}
+/** English tokenizer. */
+private val tokenizer: Lazy<TokenizerME> =
+    lazy { TokenizerME(TokenizerModel(FileInputStream("src/main/resources/en-token.bin"))) }
 
 /** English sentence detector. */
-private fun getSentenceDetector() = SentenceDetectorME(SentenceModel(FileInputStream("src/main/resources/en-sent.bin")))
+private val sentenceDetector: Lazy<SentenceDetectorME> =
+    lazy { SentenceDetectorME(SentenceModel(FileInputStream("src/main/resources/en-sent.bin"))) }
+
+/** Runs an English tokenizer on [data]. */
+internal fun tokenize(data: String): List<TokenizedSentence> =
+    sentenceDetector.value.sentDetect(data).map { TokenizedSentence(it, tokenizer.value.tokenize(it).toList()) }
 
 /** Parses English [documents] to find [entity]s. Sentences without [entity]s will be discarded. */
 internal fun findNamesAsync(documents: List<Document>, entity: NamedEntity): Deferred<List<ProcessedSentence>> =
     GlobalScope.async {
         mutableListOf<ProcessedSentence>().also { list ->
-            val finder = getNameFinder(entity)
+            val finder = nameFinders.getValue(entity).value
             for (document in documents) {
                 for (tokenizedSentence in document) {
                     val spans = finder.find(tokenizedSentence.tokens.toTypedArray()).filter { it.prob >= .9 }
@@ -48,8 +48,12 @@ internal fun findNamesAsync(documents: List<Document>, entity: NamedEntity): Def
         }
     }
 
-/** [entity] [NameFinderME]. */
-private fun getNameFinder(entity: NamedEntity) =
+/** English name finders. */
+private val nameFinders: Map<NamedEntity, Lazy<NameFinderME>> =
+    NamedEntity.values().associate { it to lazy { getNameFinder(it) } }
+
+/** English name finder for [entity]. */
+private fun getNameFinder(entity: NamedEntity): NameFinderME =
     NameFinderME(TokenNameFinderModel(FileInputStream("src/main/resources/en-ner-$entity.bin")))
 
 /** Converts the [spans] belonging to the same [Span.type] of a [tokenizedSentence]. */
