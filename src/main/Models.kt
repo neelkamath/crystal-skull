@@ -52,15 +52,26 @@ internal data class QuizResponse(val topic: String, val quiz: List<QuizQuestion>
 /** A [questionAnswer] with a specific [type] of [QuestionAnswer.options]. */
 internal data class QuizQuestion(val questionAnswer: QuestionAnswer, val type: NamedEntity)
 
-/**
- * Multiple choice [question] containing four [options] of which one is the one correct [answer].
- *
- * This is a fill-in-the-blank question, where the blank is the [answer] replaced by five underscores (`"_____"`).
- */
-internal data class QuestionAnswer(val question: String, val options: Set<String>, val answer: String) {
+/** Multiple choice question containing four [options] of which one is the one correct [answer]. */
+internal data class QuestionAnswer(val questionContext: QuestionContext, val options: Set<String>, val answer: String) {
     init {
-        if ("_____" !in question) throw Error("<question> must include a blank (i.e., _____): $this")
         if (options.size != 4) throw Error("<options> must have a size of four: $this")
         if (answer !in options) throw Error("<answer> must be in <options>: $this")
+    }
+}
+
+/**
+ * A fill-in-the-blank [question] with a [context].
+ *
+ * [question] should contain five underscores (i.e., `"_____"`) for where the answer is to be filled in.
+ *
+ * Occasionally, the [question] is insufficient for the user to understand what is being asked. For example, the
+ * question `"This slump caused the company to collapse in _____."` is impossible to understand. For this reason, the
+ * sentence present prior to the [question] will be included as a [context]. If the [question] is the first sentence in
+ * its passage, then this field will be `null` (a [context] isn't required in such cases anyway).
+ */
+internal data class QuestionContext(val question: String, val context: String?) {
+    init {
+        if ("_____" !in question) throw Error("<question> must include a blank (i.e., _____): $this")
     }
 }

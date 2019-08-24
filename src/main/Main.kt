@@ -38,7 +38,7 @@ private suspend fun postQuiz(context: PipelineContext<Unit, ApplicationCall>) = 
     val processedSentences = configuration.types.map { findNames(documents, it) }.flatten().let { sentences ->
         if (configuration.duplicateSentences) return@let sentences
         sentences.fold(mutableListOf<ProcessedSentence>()) { list, processed ->
-            list.also { if (processed.sentence !in list.map { it.sentence }) list.add(processed) }
+            list.also { if (processed.context.sentence !in list.map { it.context.sentence }) list.add(processed) }
         }
     }
     val questions = generateQuestions(processedSentences, configuration)
@@ -53,10 +53,10 @@ internal fun generateQuestions(
     .map { if (configuration.duplicateSentences) it.value else listOf(it.value.random()) }
     .flatten()
     .fold(mutableListOf<QuizQuestion>()) { list, question ->
-        if (configuration.duplicateAnswers) {
+        if (configuration.duplicateAnswers
+            || question.questionAnswer.answer !in list.map { it.questionAnswer.answer }
+        ) {
             list.add(question)
-        } else {
-            if (question.questionAnswer.answer !in list.map { it.questionAnswer.answer }) list.add(question)
         }
         list
     }

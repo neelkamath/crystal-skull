@@ -15,8 +15,11 @@ internal data class TokenizedSentence(val sentence: String, val tokens: List<Str
 /** A document useful for enhancing the accuracy of a [NameFinderME]. */
 internal typealias Document = List<TokenizedSentence>
 
-/** [names] are the entities (each being an [entity]) fround in the original [sentence]. */
-internal data class ProcessedSentence(val sentence: String, val entity: NamedEntity, val names: List<String>)
+/** The original [sentence] processed, and if there was one, the sentence [previous] to it. */
+internal data class ProcessedContext(val sentence: String, val previous: String? = null)
+
+/** [names] are the entities (each being an [entity]) fround in the [context]. */
+internal data class ProcessedSentence(val context: ProcessedContext, val entity: NamedEntity, val names: List<String>)
 
 /** English tokenizer. */
 private val tokenizer: Lazy<TokenizerME> =
@@ -35,9 +38,11 @@ internal fun findNames(documents: List<Document>, entity: NamedEntity): List<Pro
     mutableListOf<ProcessedSentence>().also { list ->
         val finder = nameFinders.getValue(entity).value
         for (document in documents) {
-            for (tokenizedSentence in document) {
+            for ((index, tokenizedSentence) in document.withIndex()) {
                 val spans = finder.find(tokenizedSentence.tokens.toTypedArray()).filter { it.prob >= .9 }
-                if (spans.isNotEmpty()) list.add(process(tokenizedSentence, spans))
+                if (spans.isNotEmpty()) {
+                    list.add(process(spans, tokenizedSentence, document.elementAtOrNull(index - 1)?.sentence))
+                }
             }
             finder.clearAdaptiveData()
         }
@@ -51,21 +56,26 @@ private val nameFinders: Map<NamedEntity, Lazy<NameFinderME>> =
 private fun getNameFinder(entity: NamedEntity): NameFinderME =
     NameFinderME(TokenNameFinderModel(FileInputStream("src/main/resources/en-ner-$entity.bin")))
 
-/** Converts the [spans] belonging to the same [Span.type] of a [tokenizedSentence]. */
-private fun process(tokenizedSentence: TokenizedSentence, spans: List<Span>): ProcessedSentence = ProcessedSentence(
-    tokenizedSentence.sentence,
-    NamedEntity.valueOf(spans[0].type),
-    spans.map { span ->
-        tokenizedSentence
-            .tokens
-            .slice(span.start until span.end)
-            .joinToString(" ")
-            .let { if (it.endsWith(" .")) it.replace(Regex("""( \.)$"""), ".") else it }
-            .replace(" '", "'")
-            .replace(" , ", ", ")
-            .replace(" %", "%")
-            .let { if (spans[0].type == "money" && isSymbol(it)) it.replaceFirst(" ", "") else it }
-    }
-)
+/**
+ * Converts the [spans] belonging to the same [Span.type] of a [tokenizedSentence].
+ *
+ * If there was one, include the [previous] sentence to [tokenizedSentence].
+ */
+private fun process(spans: List<Span>, tokenizedSentence: TokenizedSentence, previous: String?): ProcessedSentence =
+    ProcessedSentence(
+        ProcessedContext(tokenizedSentence.sentence, previous),
+        NamedEntity.valueOf(spans[0].type),
+        spans.map { span ->
+            tokenizedSentence
+                .tokens
+                .slice(span.start until span.end)
+                .joinToString(" ")
+                .let { if (it.endsWith(" .")) it.replace(Regex("""( \.)$"""), ".") else it }
+                .replace(" '", "'")
+                .replace(" , ", ", ")
+                .replace(" %", "%")
+                .let { if (spans[0].type == "money" && isSymbol(it)) it.replaceFirst(" ", "") else it }
+        }
+    )
 
 private fun isSymbol(string: String) = with(string.split(" ")[0]) { length == 1 && !matches(Regex("""^(\w|\d)""")) }

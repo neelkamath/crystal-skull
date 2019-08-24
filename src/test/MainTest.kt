@@ -93,8 +93,8 @@ class DuplicateAnswersTester {
     private fun test(duplicateAnswers: Boolean) {
         val questions = generateQuestions(
             listOf(
-                ProcessedSentence("Bob is the CEO of KYS.", NamedEntity.person, listOf("Bob")),
-                ProcessedSentence("Bob works at KYS.", NamedEntity.person, listOf("Bob"))
+                ProcessedSentence(ProcessedContext("Bob is the CEO of KYS."), NamedEntity.person, listOf("Bob")),
+                ProcessedSentence(ProcessedContext("Bob works at KYS."), NamedEntity.person, listOf("Bob"))
             ),
             QuizConfiguration(listOf(NamedEntity.person), duplicateAnswers)
         )

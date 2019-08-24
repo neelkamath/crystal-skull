@@ -198,9 +198,19 @@
                             "description": "A multiple choice question containing four choices and one correct answer",
                             "type": "object",
                             "properties": {
-                              "question": {
-                                "description": "Five consecutive underscores (`_____`) denote where the answer is to be filled in.",
-                                "type": "string"
+                              "questionContext": {
+                                "type": "object",
+                                "properties": {
+                                  "question": {
+                                    "description": "Five consecutive underscores (i.e., `_____`) denote where the answer is to be filled in.",
+                                    "type": "string"
+                                  },
+                                  "context": {
+                                    "description": "Occasionally, the question is insufficient for the user to understand what is being asked. For example, the question `This slump caused the company to collapse in _____.` is impossible to understand. For this reason, this field will contain the sentence present prior to the question. If the question is the first sentence in its passage, then this field will be `null` (a context isn't required in such cases anyway).",
+                                    "type": "string",
+                                    "nullable": true
+                                  }
+                                }
                               },
                               "options": {
                                 "description": "Possible answers",

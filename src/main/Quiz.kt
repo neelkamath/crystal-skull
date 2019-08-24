@@ -25,7 +25,7 @@ internal fun createQuestions(
  * If there aren't enough [options], fake [ProcessedSentence.entity]s will be generated.
  */
 private fun ask(processed: ProcessedSentence, options: Set<String>, answer: String): QuestionAnswer = QuestionAnswer(
-    processed.sentence.replaceFirst(answer, "_____"),
+    QuestionContext(processed.context.sentence.replaceFirst(answer, "_____"), processed.context.previous),
     (options.shuffled().take(3) + answer)
         .toMutableSet()
         .apply { while (size < 4) add(getRandomEntity(processed.entity)) }
