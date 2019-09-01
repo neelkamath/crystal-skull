@@ -22,11 +22,15 @@ dependencies {
     testImplementation("io.kotlintest:kotlintest-runner-junit5:3.3.2")
 }
 
-val test by tasks.getting(Test::class) { useJUnitPlatform { } }
+val test by tasks.getting(Test::class) {
+    useJUnitPlatform { }
+}
 
 kotlin.sourceSets {
     getByName("main").kotlin.srcDirs("src/main")
     getByName("test").kotlin.srcDirs("src/test")
 }
 
-tasks.withType<Jar> { manifest { attributes(mapOf("Main-Class" to application.mainClassName)) } }
+tasks.withType<Jar> {
+    manifest { attributes(mapOf("Main-Class" to application.mainClassName)) }
+}

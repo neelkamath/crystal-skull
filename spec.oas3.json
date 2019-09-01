@@ -137,15 +137,26 @@
                           "type": "string"
                         }
                       },
-                      "duplicateAnswers": {
-                        "description": "This states whether the quiz may include more than one question having the same answer. For example, one question may be `Apple Computer Company was founded by _____.`, and another would be `Apple purchased NeXT for its NeXTSTEP operating system and to bring _____ back.`. Although both the questions are different (and would have different options), both their answers are `Steve Jobs`.",
+                      "allowSansYears": {
+                        "description": "Questions on dates may contain options lacking years (e.g., `June 7` instead of `June 7, 2000`). Since such questions may be unnecessarily difficult and/or irrelevant to a person's study, options lacking years are disallowed by default.",
                         "type": "boolean",
                         "default": false
                       },
-                      "duplicateSentences": {
-                        "default": false,
-                        "description": "This states whether to include multiple questions from the same sentence. Take the sentence `Apple was founded by Steve Jobs in April 1976.` for example. Two questions may be generated from this, one being `Apple was founded by _____ in April 1976.` (where the answer is `Steve Jobs`), and another might be `Apple was founded by Steve Jobs in _____.` (where the answer is `April 1976`). Although the questions and answers (and hence, options) are different, they are based on the same sentence. This has the potential of making the quiz slightly boring, or having certain questions too easy since the user already knows the answer to the next duplicate sentence because they have read the rest of the same sentence in a previous question.",
-                        "type": "boolean"
+                      "duplicates": {
+                        "type": "object",
+                        "description": "Duplicates to be allowed.",
+                        "properties": {
+                          "duplicateAnswers": {
+                            "description": "This states whether the quiz may include more than one question having the same answer. For example, one question may be `Apple Computer Company was founded by _____.`, and another would be `Apple purchased NeXT for its NeXTSTEP operating system and to bring _____ back.`. Although both the questions are different (and would have different options), both their answers are `Steve Jobs`.",
+                            "type": "boolean",
+                            "default": false
+                          },
+                          "duplicateSentences": {
+                            "default": false,
+                            "description": "This states whether to include multiple questions from the same sentence. Take the sentence `Apple was founded by Steve Jobs in April 1976.` for example. Two questions may be generated from this, one being `Apple was founded by _____ in April 1976.` (where the answer is `Steve Jobs`), and another might be `Apple was founded by Steve Jobs in _____.` (where the answer is `April 1976`). Although the questions and answers (and hence, options) are different, they are based on the same sentence. This has the potential of making the quiz slightly boring, or having certain questions too easy since the user already knows the answer to the next duplicate sentence because they have read the rest of the same sentence in a previous question.",
+                            "type": "boolean"
+                          }
+                        }
                       }
                     }
                   },

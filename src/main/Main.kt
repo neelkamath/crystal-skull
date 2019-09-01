@@ -1,5 +1,7 @@
 package com.neelkamath.crystalskull
 
+import com.neelkamath.crystalskull.NameFinder.findNames
+import com.neelkamath.crystalskull.Tokenizer.tokenize
 import com.neelkamath.kwikipedia.getPage
 import com.neelkamath.kwikipedia.getUrl
 import com.neelkamath.kwikipedia.search
@@ -19,7 +21,9 @@ import io.ktor.util.pipeline.PipelineContext
 
 fun Application.main() {
     install(CallLogging)
-    install(ContentNegotiation) { gson { } }
+    install(ContentNegotiation) {
+        gson { }
+    }
     install(Routing) {
         get("search") {
             val results = search(call.request.queryParameters["query"]!!).toList()
@@ -35,10 +39,11 @@ private suspend fun postQuiz(context: PipelineContext<Unit, ApplicationCall>) = 
     val documents = getPage(topic)
         .filterKeys { it !in listOf("See also", "References", "Further reading", "External links") }
         .map { tokenize(it.value) }
-    val processedSentences = configuration.types.map { findNames(documents, it) }.flatten().let { sentences ->
-        if (configuration.duplicateSentences) return@let sentences
+    val processedSentences = configuration.types.flatMap { findNames(documents, it) }.let { sentences ->
+        if (configuration.duplicates.duplicateSentences) return@let sentences
         sentences.fold(mutableListOf<ProcessedSentence>()) { list, processed ->
-            list.also { if (processed.context.sentence !in list.map { it.context.sentence }) list.add(processed) }
+            if (processed.context.sentence !in list.map { it.context.sentence }) list.add(processed)
+            list
         }
     }
     val questions = generateQuestions(processedSentences, configuration)
@@ -49,15 +54,11 @@ private suspend fun postQuiz(context: PipelineContext<Unit, ApplicationCall>) = 
 internal fun generateQuestions(
     sentences: List<ProcessedSentence>,
     configuration: QuizConfiguration
-): List<QuizQuestion> = createQuestions(sentences, configuration.types)
-    .map { if (configuration.duplicateSentences) it.value else listOf(it.value.random()) }
-    .flatten()
+): List<QuizQuestion> = createQuestions(sentences, configuration.types, configuration.allowSansYears)
+    .filterValues { it.isNotEmpty() }
+    .flatMap { if (configuration.duplicates.duplicateSentences) it.value else listOf(it.value.random()) }
     .fold(mutableListOf<QuizQuestion>()) { list, question ->
-        if (configuration.duplicateAnswers
-            || question.questionAnswer.answer !in list.map { it.questionAnswer.answer }
-        ) {
-            list.add(question)
-        }
-        list
+        val isUniqueAnswer = question.questionAnswer.answer !in list.map { it.questionAnswer.answer }
+        list.apply { if (configuration.duplicates.duplicateAnswers || isUniqueAnswer) add(question) }
     }
     .shuffled()
