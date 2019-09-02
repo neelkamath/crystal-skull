@@ -101,14 +101,14 @@ private fun post(request: QuizRequest): QuizResponse = withTestApplication(Appli
 class QuestionGeneratorTest : StringSpec() {
     init {
         val test = { duplicateAnswers: Boolean ->
-            val questions = generateQuestions(
+            val answers = generateQuestions(
                 listOf(
                     ProcessedSentence(ProcessedContext("Bob is the CEO of KYS."), NamedEntity.person, listOf("Bob")),
                     ProcessedSentence(ProcessedContext("Bob works at KYS."), NamedEntity.person, listOf("Bob"))
                 ),
-                QuizConfiguration(listOf(NamedEntity.person), duplicateAnswers)
-            )
-            questions.map { it.questionAnswer.answer }.size shouldBe if (duplicateAnswers) 2 else 1
+                QuizConfiguration(listOf(NamedEntity.person), duplicates = Duplicates(duplicateAnswers))
+            ).map { it.questionAnswer.answer }
+            withClue("Answers: $answers") { answers.size shouldBe if (duplicateAnswers) 2 else 1 }
         }
 
         "Multiple questions with the same answer must be preserved if duplicate answers are allowed" { test(true) }

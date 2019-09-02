@@ -30,20 +30,23 @@ object Tokenizer {
         lazy { SentenceDetectorME(SentenceModel(FileInputStream("src/main/resources/en-sent.bin"))) }
 
     /** Runs an English tokenizer on [data]. */
+    @Synchronized
     internal fun tokenize(data: String): List<TokenizedSentence> =
         sentenceDetector.value.sentDetect(data).map { TokenizedSentence(it, tokenizer.value.tokenize(it).toList()) }
 }
 
 object NameFinder {
     /** English name finders. */
-    private val nameFinders: Map<NamedEntity, Lazy<NameFinderME>> =
-        NamedEntity.values().associate { it to lazy { getNameFinder(it) } }
+    private val nameFinders: Map<NamedEntity, Lazy<NameFinderME>> = NamedEntity.values().associate {
+        it to lazy { getNameFinder(it) }
+    }
 
     /** English name finder for [entity]. */
     private fun getNameFinder(entity: NamedEntity): NameFinderME =
         NameFinderME(TokenNameFinderModel(FileInputStream("src/main/resources/en-ner-$entity.bin")))
 
     /** Parses English [documents] to find [entity]s. Sentences without [entity]s will be discarded. */
+    @Synchronized
     internal fun findNames(documents: List<Document>, entity: NamedEntity): List<ProcessedSentence> {
         val list = mutableListOf<ProcessedSentence>()
         val finder = nameFinders.getValue(entity).value
