@@ -33,7 +33,7 @@ jar:
   script: ./gradlew build
   artifacts:
     paths:
-      - build/libs/crystal-skull-all.jar
+      - build/
   only:
     - master
 
