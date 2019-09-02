@@ -21,9 +21,7 @@ import io.ktor.util.pipeline.PipelineContext
 
 fun Application.main() {
     install(CallLogging)
-    install(ContentNegotiation) {
-        gson { }
-    }
+    install(ContentNegotiation) { gson() }
     install(Routing) {
         get("search") {
             val results = search(call.request.queryParameters["query"]!!).toList()
