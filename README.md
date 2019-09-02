@@ -77,7 +77,7 @@ Open `public/index.html` in your browser.
    Pick one of these.
 1. Run `openapi-generator generate -g <TARGET> -o <DIRECTORY> -i spec.oas3.json`, where `<TARGET>` is what you chose in the previous step, and `<DIRECTORY>` is the directory to output the generated SDK to. A documented and ready-to-use wrapper will now be available at `<DIRECTORY>`.
 
-For advanced use cases, please see [OpenAPI Generator](https://openapi-generator.tech/)'s documentation.
+For advanced use cases, please see the [OpenAPI Generator documentation](https://openapi-generator.tech/).
 
 ### Mocking a Server
 
@@ -87,11 +87,11 @@ The mock server will be running at the URL displayed on STDOUT.
 
 ## Contributing
 
-The specification of the HTTP API is an OpenAPI v3 document located [here](spec.oas3.json).
+The specification of the HTTP API, `spec.oas3.json`, is an OpenAPI v3 document.
 
 CI/CD is setup to automatically update the hosted documentation and development server for all commits to the `master` branch which have passed the tests.
 
-When updating the version of Kotlin used, update the plugin version in the [build file](build.gradle.kts) as well as the Docker images used in the [CI/CD file](.gitlab-ci.yml).
+When updating the version of Kotlin used, update the plugin version in the [build file](build.gradle.kts), the Docker images used in the [CI/CD file](.gitlab-ci.yml), and the version stated to install in the [installation document](docs/installation.md).
 
 ## Credits
 

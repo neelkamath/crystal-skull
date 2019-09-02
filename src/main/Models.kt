@@ -54,8 +54,11 @@ internal data class Duplicates(val duplicateAnswers: Boolean = false, val duplic
 /** The type of entity for NLP named entity recognition. */
 internal enum class NamedEntity { date, location, money, organization, percentage, person, time }
 
-/** A [quiz] on [topic] generated from a [url]. */
-internal data class QuizResponse(val topic: String, val quiz: List<QuizQuestion>, val url: String)
+/** The topics [related] to the [quiz] can also have quizzes generated for them. */
+internal data class QuizResponse(val metadata: QuizMetadata, val quiz: List<QuizQuestion>, val related: List<String>?)
+
+/** The [topic] a quiz was generated on from a [url]. */
+internal data class QuizMetadata(val topic: String, val url: String)
 
 /** A [questionAnswer] with a specific [type] of [QuestionAnswer.options]. */
 internal data class QuizQuestion(val questionAnswer: QuestionAnswer, val type: NamedEntity)
