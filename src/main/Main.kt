@@ -34,7 +34,8 @@ fun Application.main() {
 /** Handles an HTTP POST request with a [context] to the `/quiz` endpoint. */
 private suspend fun postQuiz(context: PipelineContext<Unit, ApplicationCall>) = with(context) {
     val (topic, configuration, max) = call.receive<QuizRequest>()
-    val documents = getPage(topic)
+    val page = getPage(topic)
+    val documents = page
         .filterKeys { it !in listOf("See also", "References", "Further reading", "External links") }
         .map { tokenize(it.value) }
     val processedSentences = configuration.types.flatMap { findNames(documents, it) }.let { sentences ->
@@ -44,8 +45,13 @@ private suspend fun postQuiz(context: PipelineContext<Unit, ApplicationCall>) = 
             list
         }
     }
-    val questions = generateQuestions(processedSentences, configuration)
-    call.respond(QuizResponse(topic, if (max == null) questions else questions.take(max), getUrl(topic)))
+    call.respond(
+        QuizResponse(
+            QuizMetadata(topic, getUrl(topic)),
+            generateQuestions(processedSentences, configuration).let { if (max == null) it else it.take(max) },
+            page["See also"]?.split("\n")
+        )
+    )
 }
 
 /** Generates [QuizQuestion]s from [sentences] as stated in the [configuration]. */

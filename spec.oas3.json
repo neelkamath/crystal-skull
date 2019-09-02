@@ -176,7 +176,10 @@
               "application/json": {
                 "schema": {
                   "example": {
-                    "topic": "Apple Inc.",
+                    "metadata": {
+                      "topic": "Apple Inc.",
+                      "url": "https://en.wikipedia.org/wiki/Apple_Inc."
+                    },
                     "quiz": [
                       {
                         "questionAnswer": {
@@ -194,13 +197,28 @@
                         "type": "person"
                       }
                     ],
-                    "url": "https://en.wikipedia.org/wiki/Apple_Inc."
+                    "related": [
+                      "Pixar"
+                    ]
                   },
                   "type": "object",
                   "properties": {
-                    "topic": {
-                      "description": "The topic used to generate the quiz",
-                      "type": "string"
+                    "metadata": {
+                      "type": "object",
+                      "properties": {
+                        "topic": {
+                          "description": "The topic used to generate the quiz",
+                          "type": "string"
+                        },
+                        "url": {
+                          "description": "URL of the Wikipedia page used to generate the quiz",
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "topic",
+                        "url"
+                      ]
                     },
                     "quiz": {
                       "type": "array",
@@ -268,15 +286,17 @@
                         ]
                       }
                     },
-                    "url": {
-                      "description": "URL of the Wikipedia page used to generate the quiz",
-                      "type": "string"
+                    "related": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      },
+                      "description": "Quizzes can be generated for these related topics."
                     }
                   },
                   "required": [
-                    "topic",
-                    "quiz",
-                    "url"
+                    "metadata",
+                    "quiz"
                   ]
                 }
               }

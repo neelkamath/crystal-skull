@@ -27,13 +27,13 @@ class SearchTest : StringSpec({
     }
 })
 
-class TopicTest : StringSpec({
+class MetadataTest : StringSpec({
     "Generating a quiz for a particular topic must return a quiz for the same topic" {
-        "Apple".let { post(QuizRequest(it)).topic shouldBe it }
+        "Apple".let { post(QuizRequest(it)).metadata.topic shouldBe it }
     }
 
     "Generating a quiz for a particular topic must return the correct source page's URL" {
-        post(QuizRequest("John Mayer Trio")).url shouldBe "https://en.wikipedia.org/wiki/John_Mayer_Trio"
+        post(QuizRequest("John Mayer Trio")).metadata.url shouldBe "https://en.wikipedia.org/wiki/John_Mayer_Trio"
     }
 })
 
@@ -74,6 +74,14 @@ class ConfigurationTest : StringSpec() {
         }
     }
 }
+
+class RelatedQuizTest : StringSpec({
+    "Topics related to to the one the quiz was generated on should allow for quizzes to be generated for them" {
+        post(QuizRequest("Apple Inc.")).related!!.associateWith { post(QuizRequest(it)).metadata.topic }.map {
+            it.value shouldBe it.key
+        }
+    }
+})
 
 class SizeTest : StringSpec({
     "The quiz mustn't contain more questions than what was asked for" {
