@@ -3,3 +3,4 @@
 build/
 public/
 out/
+.DS_Store
