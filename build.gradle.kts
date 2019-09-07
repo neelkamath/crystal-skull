@@ -1,7 +1,7 @@
 plugins {
     kotlin("jvm") version "1.3.50"
     application
-    id("com.github.johnrengelman.shadow") version "5.0.0"
+    id("com.github.johnrengelman.shadow") version "5.1.0"
 }
 
 application.mainClassName = "io.ktor.server.netty.EngineMain"

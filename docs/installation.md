@@ -1,3 +1,5 @@
+# Installation
+
 1. If you are testing the Dockerfile, install [Docker](https://hub.docker.com/search/?type=edition&offering=community).
 1. If you are running or testing the server, install a version of Kotlin not less than 1.3.50, and less than 2 from [here](https://kotlinlang.org/docs/tutorials/command-line.html).
 1. If you are generating an SDK, generating documentation, testing the spec, or mocking a server, install [node.js](https://nodejs.org/en/download/).
