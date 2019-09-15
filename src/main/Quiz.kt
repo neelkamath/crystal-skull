@@ -116,7 +116,10 @@ internal fun getRandomEntity(entity: NamedEntity): String = with(Faker()) {
         NamedEntity.location -> with(address()) { listOf(city(), cityName(), country(), state()).random() }
         NamedEntity.money -> "$${commerce().price()}"
         NamedEntity.organization -> company().name()
-        NamedEntity.percentage -> (1..100).random().let { listOf("$it%", "$it.${(0..99).random()}%").random() }
+        NamedEntity.percentage -> {
+            val integer = (1..100).random()
+            if (integer == 100) integer.toString() else listOf("$integer%", "$integer.${(0..99).random()}%").random()
+        }
         NamedEntity.person -> name().name()
         NamedEntity.time -> getRandomTime()
     }

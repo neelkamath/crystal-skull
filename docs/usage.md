@@ -1,29 +1,27 @@
 # Usage
 
-Substitute `<GRADLE>` with `gradlew.bat` on Windows and `./gradlew` on others.
-
-## Developing the Server
+## Server
 
 ### Running
 
-- Windows:
-    1. `gradlew.bat -t build`
-    1. In another terminal: `gradlew.bat run`
-- Other: `./gradlew -t build & ./gradlew run`
+`docker-compose up`
 
-The server will be running at `localhost:8080`, and has automatic reload enabled (i.e., the server needn't be recompiled when the code has been updated). You can change the port by setting the `PORT` environment variable.
+The server will be running at `http://localhost:8080`, and has automatic reload enabled (i.e., the server needn't be recompiled when the code in `src/main/` has been updated).
 
 ### Testing
 
-- Server: `<GRADLE> test`
 - Spec: `spectral lint spec.oas3.json`
+- Validate Docker Compose file: `docker-compose config`
+- Server: 
+    1. `docker run --rm -it --mount type=bind,src=$PWD,dst=/home/gradle openjdk:11 bash`
+    1. Run `cd home` in the container's shell.
+    
+    Since a Gradle daemon is slow to start in a container, we allow it to be reused whenever tests need to be rerun by running the container interactively. Run `./gradlew test` in the container's shell to run tests. You can open `build/reports/tests/test/index.html` in your browser to view the reports.
 
 ### Production
 
-A Dockerfile is used to run the server in production. Follow these steps to test running the server with Docker.
-1. `<GRADLE> build`
-1. `docker build -t crystal-skull .`
-1. Run at `http://localhost:8080` with `docker run -itp 8080:8080 --rm crystal-skull`. You can change the port by setting the `PORT` environment variable.
+1. `docker build -f Dockerfile-prod -t prod .`
+1. The Dockerfile `EXPOSE`s port `8080`. So to serve at `http://localhost:8080`, run `docker run --rm -p 8080:8080 prod`
 
 ## Documentation
 
@@ -31,9 +29,11 @@ A Dockerfile is used to run the server in production. Follow these steps to test
 
 `redoc-cli serve spec.oas3.json -wp 6969`
 
-Open `http://127.0.0.1:6969` in your browser. The documentation will automatically rebuild whenever you save a change to `spec.oas3.json`. Refresh the page whenever you want to view the updated documentation.
+We use port `6969` since `8080` is usually used by the application server.
 
-We use port `6969` instead of the default `8080` because the development server usually uses that.
+Open `http://localhost:8080` in your browser. 
+
+The documentation will automatically rebuild whenever you save a change to `spec.oas3.json`. Refresh the page whenever you want to view the updated documentation.
 
 ### Production
 
@@ -43,23 +43,24 @@ Open `public/index.html` in your browser.
 
 ## Generating an SDK
 
-1. Run `openapi-generator list`.
+Run `openapi-generator list`.
 
-    This will output something like:
-    ```
-    CLIENT generators:
-        - ada
-        - android
-        ...
-        - javascript
-        ...
-    SERVER generators:
-        - ada-server
-        - aspnetcore
-        ...
-    ```
-   Pick one of these.
-1. Run `openapi-generator generate -g <TARGET> -o <DIRECTORY> -i spec.oas3.json`, where `<TARGET>` is what you chose in the previous step, and `<DIRECTORY>` is the directory to output the generated SDK to. A documented and ready-to-use wrapper will now be available at `<DIRECTORY>`.
+This will output something like:
+```
+CLIENT generators:
+    - ada
+    - android
+    ...
+    - javascript
+    ...
+SERVER generators:
+    - ada-server
+    - aspnetcore
+    ...
+```
+Pick one of these (e.g., `javascript`).
+
+Run `openapi-generator generate -g <TARGET> -o <DIRECTORY> -i spec.oas3.json`, where `<TARGET>` is what you picked, and `<DIRECTORY>` is the directory to output the generated SDK to. A documented and ready-to-use wrapper will now be available at `<DIRECTORY>`.
 
 For advanced use cases, please see the [OpenAPI Generator documentation](https://openapi-generator.tech/).
 
@@ -67,4 +68,4 @@ For advanced use cases, please see the [OpenAPI Generator documentation](https:/
 
 `prism mock spec.oas3.json`
 
-The mock server will be running at the URL displayed on STDOUT.
+The mock server will be running at `http://localhost:4010`.

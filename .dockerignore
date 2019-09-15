@@ -1,3 +1,7 @@
 *
-!build/libs/crystal-skull-all.jar
-!build/resources/main/
+!gradle/
+!src/main/
+!build.gradle.kts
+!gradle.properties
+!gradlew
+!settings.gradle.kts
