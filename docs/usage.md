@@ -6,12 +6,11 @@
 
 `docker-compose up`
 
-The server will be running at `http://localhost:8080`, and has automatic reload enabled (i.e., the server needn't be recompiled when the code in `src/main/` has been updated).
+The server will be running at `http://localhost:80`, and has automatic reload enabled (i.e., the server needn't be recompiled when the code in `src/main/` has been updated).
 
 ### Testing
 
 - Spec: `spectral lint spec.oas3.json`
-- Validate Docker Compose file: `docker-compose config`
 - Server: 
     1. `docker run --rm -it --mount type=bind,src=$PWD,dst=/home/gradle openjdk:11 bash`
     1. Run `cd home` in the container's shell.
@@ -21,15 +20,13 @@ The server will be running at `http://localhost:8080`, and has automatic reload 
 ### Production
 
 1. `docker build -f Dockerfile-prod -t prod .`
-1. The Dockerfile `EXPOSE`s port `8080`. So to serve at `http://localhost:8080`, run `docker run --rm -p 8080:8080 prod`
+1. The Dockerfile `EXPOSE`s port `80`. So to serve at `http://localhost:80`, run `docker run --rm -p 80:80 prod`
 
 ## Documentation
 
 ### Developing
 
-`redoc-cli serve spec.oas3.json -wp 6969`
-
-We use port `6969` since `8080` is usually used by the application server.
+`redoc-cli serve spec.oas3.json -w`
 
 Open `http://localhost:8080` in your browser. 
 

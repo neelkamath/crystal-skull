@@ -9,7 +9,7 @@ application.mainClassName = "io.ktor.server.netty.EngineMain"
 repositories { jcenter() }
 
 dependencies {
-    val ktorVersion = "1.2.3"
+    val ktorVersion = "1.2.4"
     implementation("io.ktor:ktor-server-core:$ktorVersion")
     implementation("io.ktor:ktor-server-netty:$ktorVersion")
     implementation("io.ktor:ktor-gson:$ktorVersion")

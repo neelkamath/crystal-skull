@@ -15,18 +15,13 @@ stages:
   - image
   - deploy
 
-test-compose:
-  stage: test
-  image: docker:dind
-  script: docker-compose config > /dev/null
-
 test-server:
   stage: test
   image: openjdk:11
   script: ./gradlew test
   artifacts:
     paths:
-      - /home/build/reports/tests/test/
+      - build/reports/tests/test/
 
 test-spec:
   stage: test
