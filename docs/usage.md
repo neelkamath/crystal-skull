@@ -12,15 +12,16 @@ The server will be running at `http://localhost:80`, and has automatic reload en
 
 - Spec: `spectral lint spec.oas3.json`
 - Server: 
-    1. `docker run --rm -it --mount type=bind,src=$PWD,dst=/home/gradle openjdk:11 bash`
+    1. `docker run --rm -it --mount type=bind,src=$PWD,dst=/home openjdk:11 bash`
     1. Run `cd home` in the container's shell.
-    
+
     Since a Gradle daemon is slow to start in a container, we allow it to be reused whenever tests need to be rerun by running the container interactively. Run `./gradlew test` in the container's shell to run tests. You can open `build/reports/tests/test/index.html` in your browser to view the reports.
 
 ### Production
 
-1. `docker build -f Dockerfile-prod -t prod .`
-1. The Dockerfile `EXPOSE`s port `80`. So to serve at `http://localhost:80`, run `docker run --rm -p 80:80 prod`
+`docker build -f Dockerfile-prod -t prod .`
+
+The Dockerfile `EXPOSE`s port `80`. So to serve at `http://localhost:80`, run `docker run --rm -p 80:80 prod`. You can change the port by setting the `PORT` environment variable (e.g., `docker run --rm -e PORT=8080 -p 8080:8080 prod`).
 
 ## Documentation
 
