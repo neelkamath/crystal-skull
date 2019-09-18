@@ -10,7 +10,7 @@ The server will be running at `http://localhost:80`, and has automatic reload en
 
 ### Testing
 
-- Spec: `spectral lint spec.oas3.json`
+- Spec: `spectral lint openapi.yaml`
 - Server: 
     1. `docker run --rm -it --mount type=bind,src=$PWD,dst=/home openjdk:11 bash`
     1. Run `cd home` in the container's shell.
@@ -19,7 +19,7 @@ The server will be running at `http://localhost:80`, and has automatic reload en
 
 ### Production
 
-`docker build -f Dockerfile-prod -t prod .`
+`docker build -f prod.Dockerfile -t prod .`
 
 The Dockerfile `EXPOSE`s port `80`. So to serve at `http://localhost:80`, run `docker run --rm -p 80:80 prod`. You can change the port by setting the `PORT` environment variable (e.g., `docker run --rm -e PORT=8080 -p 8080:8080 prod`).
 
@@ -27,15 +27,15 @@ The Dockerfile `EXPOSE`s port `80`. So to serve at `http://localhost:80`, run `d
 
 ### Developing
 
-`redoc-cli serve spec.oas3.json -w`
+`redoc-cli serve openapi.yaml -w`
 
 Open `http://localhost:8080` in your browser. 
 
-The documentation will automatically rebuild whenever you save a change to `spec.oas3.json`. Refresh the page whenever you want to view the updated documentation.
+The documentation will automatically rebuild whenever you save a change to `openapi.yaml`. Refresh the page whenever you want to view the updated documentation.
 
 ### Production
 
-`redoc-cli bundle spec.oas3.json -o public/index.html --title 'Crystal Skull'`
+`redoc-cli bundle openapi.yaml -o public/index.html --title 'Crystal Skull'`
 
 Open `public/index.html` in your browser.
 
@@ -58,12 +58,12 @@ SERVER generators:
 ```
 Pick one of these (e.g., `javascript`).
 
-Run `openapi-generator generate -g <TARGET> -o <DIRECTORY> -i spec.oas3.json`, where `<TARGET>` is what you picked, and `<DIRECTORY>` is the directory to output the generated SDK to. A documented and ready-to-use wrapper will now be available at `<DIRECTORY>`.
+Run `openapi-generator generate -g <TARGET> -o <DIRECTORY> -i openapi.yaml`, where `<TARGET>` is what you picked, and `<DIRECTORY>` is the directory to output the generated SDK to. A documented and ready-to-use wrapper will now be available at `<DIRECTORY>`.
 
 For advanced use cases, please see the [OpenAPI Generator documentation](https://openapi-generator.tech/).
 
 ## Mocking a Server
 
-`prism mock spec.oas3.json`
+`prism mock openapi.yaml`
 
 The mock server will be running at `http://localhost:4010`.

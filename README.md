@@ -26,7 +26,7 @@ If you're forking the repo to develop the project as your own and not just to se
 
 ## Contributing
 
-`spec.oas3.json` is the specification for the HTTP API.
+`openapi.yaml` is the specification for the HTTP API.
 
 CI/CD is setup to automatically update the hosted documentation and development server for all commits to the `master` branch which have passed the tests.
 

@@ -46,7 +46,7 @@ push-image:
   image: docker:dind
   script:
     - echo $HEROKU_AUTH_TOKEN | docker login --username=_ --password-stdin registry.heroku.com
-    - docker build -f Dockerfile-prod -t crystal-skull .
+    - docker build -f prod.Dockerfile -t crystal-skull .
     - docker tag crystal-skull registry.heroku.com/$HEROKU_APP/web
     - docker push registry.heroku.com/$HEROKU_APP/web
     - "echo $(docker inspect registry.heroku.com/$HEROKU_APP/web --format='{{.Id}}') > image_id.txt"
