@@ -12,5 +12,5 @@ COPY --from=builder /app/build/resources/main/ src/main/resources/
 ENV PORT 80
 EXPOSE 80
 HEALTHCHECK --timeout=5s --start-period=5s --retries=1 \
-    CMD curl -f http://localhost:$PORT/search?query=appl || exit 1
+    CMD curl -f http://localhost:$PORT/health_check
 CMD ["java", "-server", "-jar", "crystal-skull-all.jar"]

@@ -4,7 +4,7 @@
 
 Replace `<GRADLE>` with `gradlew.bat` on Windows, and `./gradlew` on others.
 
-### Running
+### Developing
 
 `<GRADLE> -t assemble & <GRADLE> run`
 

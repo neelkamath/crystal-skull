@@ -3,8 +3,7 @@ openapi: 3.0.2
 info:
   title: Crystal Skull API
   version: 0.1.0
-  description:
-    This API generates an entire quiz in English with just a topic name, or even nothing at all for a random one!
+  description: Generates an entire quiz in English with just a topic name, or even nothing at all for a random one.
   contact:
     name: Neel Kamath
     email: neelkamath@icloud.com
@@ -16,7 +15,7 @@ servers:
   - url: https://crystal-skull.herokuapp.com
     description: This is a temporary development server which may be offline or serving a different API in the future.
 paths:
-  "/search":
+  /search:
     get:
       tags:
         - search
@@ -31,7 +30,7 @@ paths:
             type: string
             example: appl
       responses:
-        "200":
+        200:
           description: Topic names and descriptions
           content:
             application/json:
@@ -65,7 +64,7 @@ paths:
                         - description
                 required:
                   - topics
-  "/quiz":
+  /quiz:
     post:
       tags:
         - generate
@@ -148,7 +147,7 @@ paths:
                     need a certain number, specifying a maximum number to send back will reduce the download size.
                   type: integer
       responses:
-        "200":
+        200:
           description: Generated quiz
           content:
             application/json:
@@ -258,3 +257,17 @@ paths:
                 required:
                   - metadata
                   - quiz
+  /health_check:
+    get:
+      tags:
+        - status
+      description: Checks if all systems are operational
+      operationId: healthCheck
+      responses:
+        200:
+          description: All systems are operational
+          content:
+            text/plain:
+              schema:
+                example: OK
+                type: string
