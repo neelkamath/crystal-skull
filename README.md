@@ -31,6 +31,8 @@ If you're forking the repo to develop the project as your own and not just to se
 
 CI/CD is setup to automatically update the hosted documentation and development server for all commits to the `master` branch which have passed the tests.
 
+Create a GitHub release for every new HTTP API version.
+
 ## Credits
 
 The template for the README's description came from [Joel on Software](https://www.joelonsoftware.com/2002/05/09/product-vision/).

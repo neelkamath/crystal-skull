@@ -28,7 +28,7 @@ test-spec:
   image: node
   script:
     - npm i -g @stoplight/spectral
-    - spectral lint spec.oas3.json
+    - spectral lint openapi.yaml
 
 jar:
   stage: jar
