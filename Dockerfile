@@ -10,7 +10,7 @@ RUN apk --no-cache add curl
 COPY --from=builder /app/build/libs/crystal-skull-all.jar crystal-skull-all.jar
 COPY --from=builder /app/build/resources/main/ src/main/resources/
 ENV PORT 80
-EXPOSE $PORT
+EXPOSE 80
 HEALTHCHECK --timeout=5s --start-period=5s --retries=1 \
     CMD curl -f http://localhost:$PORT/search?query=appl || exit 1
 CMD ["java", "-server", "-jar", "crystal-skull-all.jar"]

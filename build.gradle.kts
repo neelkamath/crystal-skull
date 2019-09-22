@@ -6,10 +6,7 @@ plugins {
 
 application.mainClassName = "io.ktor.server.netty.EngineMain"
 
-repositories {
-    mavenCentral()
-    jcenter()
-}
+repositories { jcenter() }
 
 dependencies {
     val ktorVersion = "1.2.4"

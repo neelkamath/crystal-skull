@@ -43,7 +43,7 @@ private fun ask(
     correctOption: CorrectOption,
     allowSansYears: Boolean = false
 ): QuestionAnswer = QuestionAnswer(
-    QuestionContext(processed.context.sentence.replaceFirst(correctOption.answer, "_____"), processed.context.previous),
+    QuestionContext(processed.context.sentence, processed.context.previous),
     (correctOption.options.shuffled().take(3) + correctOption.answer)
         .let { options ->
             var set = filterOptions(correctOption.copy(options = options.toSet()), processed.entity, allowSansYears)
@@ -56,7 +56,9 @@ private fun ask(
         }
         .shuffled()
         .toSet(),
-    correctOption.answer
+    processed.context.sentence.indexOf(correctOption.answer).let {
+        AnswerOffset(it, it + correctOption.answer.length)
+    }
 )
 
 /** One or more [options], of which one is the correct [answer]. */

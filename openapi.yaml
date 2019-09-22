@@ -177,13 +177,15 @@ paths:
                   quiz:
                     - questionAnswer:
                         questionContext:
-                          question: In 1996, Spindler was replaced by _____ as CEO.
+                          question: In 1996, Spindler was replaced by Gil Amelio as CEO.
                         options:
                           - Steve Jobs
                           - Gil Amelio
                           - Steve Wozniak
                           - Ronald Wayne
-                        answer: Gil Amelio
+                        answerOffset:
+                          start: 34
+                          end: 44
                       type: person
                   related:
                     - Pixar
@@ -245,12 +247,22 @@ paths:
                                 type: string
                               minItems: 4
                               maxItems: 4
-                            answer:
-                              description: Correct option
-                              type: string
+                            answerOffset:
+                              description: The character offsets of the correct option
+                              type: object
+                              properties:
+                                start:
+                                  type: integer
+                                  description: Starting offset
+                                end:
+                                  type: integer
+                                  description: Ending offset
+                              required:
+                                - start
+                                - end
                           required:
                             - questionContext
-                            - answer
+                            - answerOffset
                             - options
                         type:
                           description: Type of question

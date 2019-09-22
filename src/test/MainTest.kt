@@ -73,6 +73,10 @@ class ConfigurationTest : StringSpec() {
                 withClue("Questions with duplicate answers") { size shouldBe toSet().size }
             }
         }
+
+        "The generator mustn't crash while generating questions for every type" {
+            post(QuizRequest("Apple Inc.", configuration = QuizConfiguration(types = NamedEntity.values().toList())))
+        }
     }
 }
 

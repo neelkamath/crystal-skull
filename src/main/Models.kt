@@ -40,14 +40,14 @@ internal data class QuizConfiguration(
  * Duplicates to be allowed.
  *
  * [duplicateAnswers] states whether questions with the same answer should be included. For example, one question may be
- * `Apple Computer Company was founded by _____.`, and another would be `Apple purchased NeXT for its NeXTSTEP operating
- * system and to bring _____ back.`. Although both the questions are different (and would have different options), both
- * their answers are `Steve Jobs`.
+ * "Apple Computer Company was founded by Steve Jobs.", and another would be "Apple purchased NeXT for its NeXTSTEP
+ * operating system and to bring Steve Jobs back.". Although both the questions are different (and would have different
+ * options), both their answers are "Steve Jobs".
  *
- * [duplicateSentences] states whether to include multiple questions from the same sentence. Take the sentence `Apple
- * was founded by Steve Jobs in April 1976.` for example. Two questions may be generated from this, one being `Apple was
- * founded by _____ in April 1976.` (where the answer is `Steve Jobs`), and another might be `Apple was founded by Steve
- * Jobs in _____.` (where the answer is `April 1976`).
+ * [duplicateSentences] states whether to include multiple questions from the same sentence. Take the sentence "Apple
+ * was founded by Steve Jobs in April 1976." for example. Two questions may be generated from this, one being "Apple was
+ * founded by Steve Jobs in April 1976." (where the answer is "Steve Jobs"), and another might be "Apple was founded by
+ * Steve Jobs in April 1976." (where the answer is "April 1976").
  */
 internal data class Duplicates(val duplicateAnswers: Boolean = false, val duplicateSentences: Boolean = false)
 
@@ -63,26 +63,33 @@ internal data class QuizMetadata(val topic: String, val url: String)
 /** A [questionAnswer] with a specific [type] of [QuestionAnswer.options]. */
 internal data class QuizQuestion(val questionAnswer: QuestionAnswer, val type: NamedEntity)
 
-/** Multiple choice question containing four [options] of which one is the one correct [answer]. */
-internal data class QuestionAnswer(val questionContext: QuestionContext, val options: Set<String>, val answer: String) {
+/** Multiple choice question containing four [options] of which one is the one correct [answerOffset]. */
+internal data class QuestionAnswer(
+    val questionContext: QuestionContext,
+    val options: Set<String>,
+    val answerOffset: AnswerOffset
+) {
+    val answer get() = questionContext.question.slice(answerOffset.start until answerOffset.end)
+
     init {
         if (options.size != 4) throw Error("<options> must have a size of four: $this")
-        if (answer !in options) throw Error("<answer> must be in <options>: $this")
+        if (answer !in options) throw Error("<answer> ($answer) must be in <options> ($options)")
+    }
+}
+
+/** The [start]ing and [end]ing character offsets of an answer in a [String]. */
+internal data class AnswerOffset(val start: Int, val end: Int) {
+    init {
+        if (start >= end) throw Error("<start> must be lesser than <end>: $this")
     }
 }
 
 /**
  * A fill-in-the-blank [question] with a [context].
  *
- * [question] should contain five underscores (i.e., `"_____"`) for where the answer is to be filled in.
- *
  * Occasionally, the [question] is insufficient for the user to understand what is being asked. For example, the
- * question `"This slump caused the company to collapse in _____."` is impossible to understand. For this reason, the
+ * [question] `"This slump caused the company to collapse in 1976."` is impossible to understand. For this reason, the
  * sentence present prior to the [question] will be included as a [context]. If the [question] is the first sentence in
  * its passage, then this field will be `null` (a [context] isn't required in such cases anyway).
  */
-internal data class QuestionContext(val question: String, val context: String?) {
-    init {
-        if ("_____" !in question) throw Error("<question> must include a blank (i.e., _____): $this")
-    }
-}
+internal data class QuestionContext(val question: String, val context: String?)

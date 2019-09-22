@@ -12,7 +12,8 @@ If you're forking the repo to develop the project as your own and not just to se
 
 ## Installation
 
-1. If you are developing the server, install [Docker v19](https://hub.docker.com/search/?type=edition&offering=community).
+1. If you are developing the server, install [Java SE Development Kit 11](https://www.oracle.com/technetwork/java/javase/downloads/jdk11-downloads-5066655.html). 
+1. If you are testing the Dockerfile or running the app in production, install [Docker v19](https://hub.docker.com/search/?type=edition&offering=community).
 1. If you are generating an SDK, generating documentation, testing the spec, or mocking the server, install [node.js](https://nodejs.org/en/download/).
 1. If you are generating an SDK, run `npm i -g @openapitools/openapi-generator-cli`.
 1. If you are generating documentation, run `npm i -g redoc-cli`.
