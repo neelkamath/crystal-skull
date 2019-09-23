@@ -1,10 +1,10 @@
-# Usage
+# Developing
 
 ## Server
 
 Replace `<GRADLE>` with `gradlew.bat` on Windows, and `./gradlew` on others.
 
-### Developing
+### Development
 
 `<GRADLE> -t assemble & <GRADLE> run`
 

@@ -11,8 +11,8 @@ variables:
 
 stages:
   - test
-  - jar
-  - image
+  - build
+  - push
   - deploy
 
 test-server:
@@ -30,33 +30,42 @@ test-spec:
     - npm i -g @stoplight/spectral
     - spectral lint openapi.yaml
 
-jar:
-  stage: jar
-  image: openjdk:11
-  script: ./gradlew shadowJar
-  artifacts:
-    paths:
-      - build/libs/crystal-skull-all.jar
-      - build/resources/main/
-  only:
-    - master
-
-push-image:
-  stage: image
+build-image:
+  stage: build
   image: docker:dind
   script:
-    - echo $HEROKU_AUTH_TOKEN | docker login --username=_ --password-stdin registry.heroku.com
-    - docker build -t crystal-skull .
+    - export version=$(grep version openapi.yaml)
+    - 'export tag=${version#*: }'
+    - echo $tag > image_tag.txt
+    - docker build -t $CI_REGISTRY_IMAGE -t $CI_REGISTRY_IMAGE:$tag .
+    - docker push $CI_REGISTRY_IMAGE
+    - docker push $CI_REGISTRY_IMAGE:$tag
+  artifacts:
+    paths:
+      - image_tag.txt
+
+docker-hub:
+  stage: deploy
+  image: docker:dind
+  script:
+    - docker login -u $DOCKER_HUB_USER --password-stdin https://index.docker.io/v1/ <<< $DOCKER_HUB_PASSWORD
+    - docker push $CI_REGISTRY_IMAGE
+    - docker push $CI_REGISTRY_IMAGE:$(cat image_tag.txt)
+
+heroku-push:
+  stage: push
+  image: docker:dind
+  script:
+    - docker login --username=_ --password-stdin registry.heroku.com <<< $HEROKU_AUTH_TOKEN
+    - docker pull $CI_REGISTRY_IMAGE
     - docker tag crystal-skull registry.heroku.com/$HEROKU_APP/web
     - docker push registry.heroku.com/$HEROKU_APP/web
-    - "echo $(docker inspect registry.heroku.com/$HEROKU_APP/web --format='{{.Id}}') > image_id.txt"
+    - echo $(docker inspect registry.heroku.com/$HEROKU_APP/web --format='{{.Id}}') > image_id.txt
   artifacts:
     paths:
       - image_id.txt
-  only:
-    - master
 
-release-image:
+heroku-release:
   stage: deploy
   image: appropriate/curl
   script: >
@@ -72,8 +81,6 @@ release-image:
       -H 'Content-Type: application/json'
       -H 'Accept: application/vnd.heroku+json; version=3.docker-releases'
       -H "Authorization: Bearer $HEROKU_AUTH_TOKEN"
-  only:
-    - master
 
 pages:
   stage: deploy

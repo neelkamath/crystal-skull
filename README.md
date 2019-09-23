@@ -6,11 +6,19 @@ For developers who want to build an innovative quiz app, Crystal Skull is a serv
 
 The name _Crystal Skull_ comes from the movie _[Indiana Jones and the Kingdom of the Crystal Skull](https://www.imdb.com/title/tt0367882/)_. The movie shows an alien with a crystal skull who seems to have knowledge on everything. This program, too, seems to have knowledge on everything 😉.
 
-You can view the HTTP API docs [here](https://neelkamath.gitlab.io/crystal-skull/).
+## [Usage](https://neelkamath.gitlab.io/crystal-skull/)
+
+## Contributing
+
+`openapi.yaml` is the specification for the HTTP API.
+
+CI/CD is setup to automatically update the hosted documentation and development server for all commits to the `master` branch which have passed the tests.
+
+Create a GitHub release for every new HTTP API version.
 
 If you're forking the repo to develop the project as your own and not just to send back a PR, follow [these steps](docs/fork.md).
 
-## Installation
+### Installation
 
 1. If you are developing the server, install [Java SE Development Kit 11](https://www.oracle.com/technetwork/java/javase/downloads/jdk11-downloads-5066655.html). 
 1. If you are testing the Dockerfile or running the app in production, install [Docker v19](https://hub.docker.com/search/?type=edition&offering=community).
@@ -23,15 +31,7 @@ If you're forking the repo to develop the project as your own and not just to se
     - SSH: `git clone git@github.com:neelkamath/crystal-skull.git`
     - HTTPS: `git clone https://github.com/neelkamath/crystal-skull.git`
 
-## [Usage](docs/usage.md)
-
-## Contributing
-
-`openapi.yaml` is the specification for the HTTP API.
-
-CI/CD is setup to automatically update the hosted documentation and development server for all commits to the `master` branch which have passed the tests.
-
-Create a GitHub release for every new HTTP API version.
+### [Developing](docs/developing.md)
 
 ## Credits
 
