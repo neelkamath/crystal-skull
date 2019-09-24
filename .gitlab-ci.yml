@@ -51,7 +51,7 @@ heroku-push:
 heroku-release:
   stage: deploy
   image: appropriate/curl
-  script: |
+  script: >-
     curl -nX PATCH https://api.heroku.com/apps/"$HEROKU_APP"/formation
       -d '{"updates":[{"type":"web","docker_image":"'"$(cat image_id.txt)"'"}]}'
       -H 'Content-Type: application/json'
