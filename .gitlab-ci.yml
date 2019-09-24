@@ -52,17 +52,10 @@ heroku-release:
   stage: deploy
   image: appropriate/curl
   script: >
-    curl -n -X PATCH https://api.heroku.com/apps/"$HEROKU_APP"/formation
-      -d '{
-        "updates": [
-          {
-            "type": "web",
-            "docker_image": "'"$(cat image_id.txt)"'"
-          }
-        ]
-      }'
-      -H 'Content-Type: application/json'
-      -H 'Accept: application/vnd.heroku+json; version=3.docker-releases'
+    curl -nX PATCH https://api.heroku.com/apps/"$HEROKU_APP"/formation \
+      -d '{"updates":[{"type":"web","docker_image":"'"$(cat image_id.txt)"'"}]}' \
+      -H 'Content-Type: application/json' \
+      -H 'Accept: application/vnd.heroku+json; version=3.docker-releases' \
       -H "Authorization: Bearer $HEROKU_AUTH_TOKEN"
 
 pages:
