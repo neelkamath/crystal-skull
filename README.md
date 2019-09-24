@@ -6,6 +6,20 @@ For developers who want to build an innovative quiz app, Crystal Skull is a serv
 
 The name _Crystal Skull_ comes from the movie _[Indiana Jones and the Kingdom of the Crystal Skull](https://www.imdb.com/title/tt0367882/)_. The movie shows an alien with a crystal skull who seems to have knowledge on everything. This program, too, seems to have knowledge on everything 😉.
 
+## Installation
+
+You can try out the HTTP API using the development server `https://crystal-skull.herokuapp.com`. However, this server may be offline or serving a different API in the future. Hence, it's highly recommended to run your own instance as shown below.
+
+### Running Your Own Instance
+
+Install [Docker v19](https://hub.docker.com/search/?type=edition&offering=community).
+
+To serve at `http://localhost:80`, run `docker run --rm -p 80:80 neelkamath/crytal-skull`. 
+
+You can change the port by setting the `PORT` environment variable (e.g., `docker run --rm -e PORT=8080 -p 8080:8080 neelkamath/crytal-skull`).
+
+To run a particular version, run `docker run --rm -p 80:80 neelkamath/crytal-skull:<TAG>`, where `<TAG>` is from `https://hub.docker.com/r/neelkamath/crystal-skull/tags`.
+
 ## [Usage](https://neelkamath.gitlab.io/crystal-skull/)
 
 ## Contributing
