@@ -9,19 +9,14 @@ variables:
   # See https://github.com/docker-library/docker/pull/166
   DOCKER_TLS_CERTDIR: ""
 
-stages:
-  - test
-  - build
-  - push
-  - deploy
+stages: [test, build, push, deploy]
 
 test-server:
   stage: test
   image: openjdk:11
   script: ./gradlew test
   artifacts:
-    paths:
-      - build/reports/tests/test/
+    paths: [build/reports/tests/test/]
 
 test-spec:
   stage: test
@@ -34,7 +29,7 @@ build-image:
   stage: build
   image: docker:dind
   script:
-    - docker login $CI_REGISTRY
+    - docker login -u $CI_REGISTRY_USER --password-stdin $CI_REGISTRY <<< $CI_REGISTRY_PASSWORD
     - export version=$(grep version openapi.yaml)
     - 'export tag=${version#*: }'
     - echo $tag > image_tag.txt
@@ -42,8 +37,7 @@ build-image:
     - docker push $CI_REGISTRY_IMAGE
     - docker push $CI_REGISTRY_IMAGE:$tag
   artifacts:
-    paths:
-      - image_tag.txt
+    paths: [image_tag.txt]
 
 docker-hub:
   stage: push
@@ -63,8 +57,7 @@ heroku-push:
     - docker push registry.heroku.com/$HEROKU_APP/web
     - echo $(docker inspect registry.heroku.com/$HEROKU_APP/web --format='{{.Id}}') > image_id.txt
   artifacts:
-    paths:
-      - image_id.txt
+    paths: [image_id.txt]
 
 heroku-release:
   stage: deploy
@@ -90,7 +83,5 @@ pages:
     - npm i -g redoc-cli
     - redoc-cli bundle spec.oas3.json -o public/index.html --title 'Crystal Skull'
   artifacts:
-    paths:
-      - public
-  only:
-    - master
+    paths: [public]
+  only: [master]

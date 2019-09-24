@@ -16,6 +16,8 @@ CI/CD is setup to automatically update the hosted documentation and development 
 
 Create a GitHub release for every new HTTP API version.
 
+When required, update the [Docker Hub repository](https://hub.docker.com/r/neelkamath/crystal-skull)'s **Overview**.
+
 If you're forking the repo to develop the project as your own and not just to send back a PR, follow [these steps](docs/fork.md).
 
 ### Installation
