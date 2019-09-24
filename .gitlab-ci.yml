@@ -31,6 +31,8 @@ docker-hub:
     - echo $DOCKER_HUB_PASSWORD | docker login -u $DOCKER_HUB_USER --password-stdin https://index.docker.io/v1/
     - docker pull $CI_REGISTRY_IMAGE
     - docker pull $CI_REGISTRY_IMAGE:$(cat image_tag.txt)
+    - docker tag $DOCKER_HUB_USER/crystal-skull $CI_REGISTRY_IMAGE
+    - docker tag $DOCKER_HUB_USER/crystal-skull:$(cat image_tag.txt) $CI_REGISTRY_IMAGE:$(cat image_tag.txt)
     - docker push $DOCKER_HUB_USER/crystal-skull
     - docker push $DOCKER_HUB_USER/crystal-skull:$(cat image_tag.txt)
 
@@ -39,6 +41,7 @@ heroku-push:
   image: docker:dind
   script:
     - echo $HEROKU_AUTH_TOKEN | docker login --username=_ --password-stdin registry.heroku.com
+    - docker pull $CI_REGISTRY_IMAGE
     - docker tag $CI_REGISTRY_IMAGE registry.heroku.com/$HEROKU_APP/web
     - docker push registry.heroku.com/$HEROKU_APP/web
     - echo $(docker inspect registry.heroku.com/$HEROKU_APP/web --format='{{.Id}}') > image_id.txt
