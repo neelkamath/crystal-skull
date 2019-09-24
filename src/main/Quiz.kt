@@ -120,7 +120,7 @@ internal fun getRandomEntity(entity: NamedEntity): String = with(Faker()) {
         NamedEntity.organization -> company().name()
         NamedEntity.percentage -> {
             val integer = (1..100).random()
-            if (integer == 100) integer.toString() else listOf("$integer%", "$integer.${(0..99).random()}%").random()
+            if (integer == 100) "100%" else listOf("$integer%", "$integer.${(0..99).random()}%").random()
         }
         NamedEntity.person -> name().name()
         NamedEntity.time -> getRandomTime()

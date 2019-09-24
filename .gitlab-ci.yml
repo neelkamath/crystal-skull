@@ -37,8 +37,8 @@ build-image:
     - docker push $CI_REGISTRY_IMAGE:$(cat image_tag.txt)
   artifacts:
     paths: [image_tag.txt]
-  only:
-    - master
+    # TODO: Uncomment: only:
+    # TODO: Uncomment: - master
 
 docker-hub:
   stage: push
@@ -51,8 +51,8 @@ docker-hub:
     - docker tag $CI_REGISTRY_IMAGE:$(cat image_tag.txt) $DOCKER_HUB_USER/crystal-skull:$(cat image_tag.txt)
     - docker push $DOCKER_HUB_USER/crystal-skull
     - docker push $DOCKER_HUB_USER/crystal-skull:$(cat image_tag.txt)
-  only:
-    - master
+    # TODO: Uncomment: only:
+    # TODO: Uncomment: - master
 
 heroku-push:
   stage: push
@@ -65,8 +65,8 @@ heroku-push:
     - echo $(docker inspect registry.heroku.com/$HEROKU_APP/web --format='{{.Id}}') > image_id.txt
   artifacts:
     paths: [image_id.txt]
-  only:
-    - master
+    # TODO: Uncomment: only:
+    # TODO: Uncomment: - master
 
 heroku-release:
   stage: deploy
@@ -77,8 +77,8 @@ heroku-release:
       -H 'Content-Type: application/json' \
       -H 'Accept: application/vnd.heroku+json; version=3.docker-releases' \
       -H "Authorization: Bearer $HEROKU_AUTH_TOKEN"
-  only:
-    - master
+    # TODO: Uncomment: only:
+  # TODO: Uncomment: - master
 
 pages:
   stage: deploy
