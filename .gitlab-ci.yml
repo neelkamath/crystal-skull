@@ -52,8 +52,8 @@ heroku-release:
   stage: deploy
   image: appropriate/curl
   script: >
-    curl -X PATCH https://api.heroku.com/apps/"$HEROKU_APP"/formation
-      -nd '{
+    curl -nX PATCH https://api.heroku.com/apps/"$HEROKU_APP"/formation
+      -d '{
         "updates": [
           {
             "type": "web",
