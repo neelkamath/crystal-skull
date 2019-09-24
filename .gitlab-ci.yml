@@ -11,20 +11,6 @@ variables:
 
 stages: [test, build, push, deploy]
 
-test-server:
-  stage: test
-  image: openjdk:11
-  script: ./gradlew test
-  artifacts:
-    paths: [build/reports/tests/test/]
-
-test-spec:
-  stage: test
-  image: node
-  script:
-    - npm i -g @stoplight/spectral
-    - spectral lint openapi.yaml
-
 build-image:
   stage: build
   image: docker:dind
