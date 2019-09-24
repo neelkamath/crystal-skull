@@ -23,6 +23,7 @@ fun Application.main() {
     install(CallLogging)
     install(ContentNegotiation) { gson() }
     install(Routing) {
+        get("health_check") { call.respond("OK") }
         get("search") {
             val results = search(call.request.queryParameters["query"]!!).toList()
             call.respond(SearchResponse(results.map { Topic(it.title, it.description) }))

@@ -1,15 +1,29 @@
-FROM openjdk:8-jre-alpine
-
-ENV APPLICATION_USER ktor
-RUN adduser -Dg '' $APPLICATION_USER
-
-RUN mkdir /app
-RUN chown -R $APPLICATION_USER /app
-
-USER $APPLICATION_USER
-
-COPY ./build/libs/crystal-skull-all.jar /app/crystal-skull-all.jar
-COPY ./build/resources/main/ /app/src/main/resources/
+FROM openjdk:11 AS builder
 WORKDIR /app
+COPY gradle/ gradle/
+COPY src/main/ src/main/
+COPY build.gradle.kts gradle.properties gradlew settings.gradle.kts ./
+RUN ./gradlew shadowJar
 
-CMD ["java", "-server", "-XX:+UnlockExperimentalVMOptions", "-XX:+UseCGroupMemoryLimitForHeap", "-XX:InitialRAMFraction=2", "-XX:MinRAMFraction=2", "-XX:MaxRAMFraction=2", "-XX:+UseG1GC", "-XX:MaxGCPauseMillis=100", "-XX:+UseStringDeduplication", "-jar", "crystal-skull-all.jar"]
+FROM azul/zulu-openjdk-alpine:11-jre
+RUN apk --no-cache add curl
+COPY --from=builder /app/build/libs/crystal-skull-all.jar crystal-skull-all.jar
+COPY --from=builder /app/build/resources/main/ src/main/resources/
+ENV PORT 80
+EXPOSE 80
+HEALTHCHECK --timeout=5s --start-period=5s --retries=1 \
+    CMD curl -f http://localhost:$PORT/health_check
+CMD [
+    "java",
+    "-server",
+    "-XX:+UnlockExperimentalVMOptions",
+    "-XX:+UseCGroupMemoryLimitForHeap",
+    "-XX:InitialRAMFraction=2",
+    "-XX:MinRAMFraction=2",
+    "-XX:MaxRAMFraction=2",
+    "-XX:+UseG1GC",
+    "-XX:MaxGCPauseMillis=100",
+    "-XX:+UseStringDeduplication",
+    "-jar",
+    "crystal-skull-all.jar"
+]

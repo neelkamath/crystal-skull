@@ -1,7 +1,7 @@
 plugins {
     kotlin("jvm") version "1.3.50"
     application
-    id("com.github.johnrengelman.shadow") version "5.0.0"
+    id("com.github.johnrengelman.shadow") version "5.1.0"
 }
 
 application.mainClassName = "io.ktor.server.netty.EngineMain"
@@ -9,7 +9,7 @@ application.mainClassName = "io.ktor.server.netty.EngineMain"
 repositories { jcenter() }
 
 dependencies {
-    val ktorVersion = "1.2.3"
+    val ktorVersion = "1.2.4"
     implementation("io.ktor:ktor-server-core:$ktorVersion")
     implementation("io.ktor:ktor-server-netty:$ktorVersion")
     implementation("io.ktor:ktor-gson:$ktorVersion")

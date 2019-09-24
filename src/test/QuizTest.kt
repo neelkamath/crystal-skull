@@ -55,7 +55,7 @@ class EntityGeneratorTest : StringSpec({
     }
 
     "Randomly generated percentages must look real" {
-        repeat(5) { getRandomEntity(NamedEntity.percentage) shouldMatch Regex("""\d{1,2}(\.\d{1,2})?%""") }
+        repeat(10) { getRandomEntity(NamedEntity.percentage) shouldMatch Regex("""(100|\d{1,2}(\.\d{1,2})?)%""") }
     }
 })
 

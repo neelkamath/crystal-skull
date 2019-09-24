@@ -6,92 +6,48 @@ For developers who want to build an innovative quiz app, Crystal Skull is a serv
 
 The name _Crystal Skull_ comes from the movie _[Indiana Jones and the Kingdom of the Crystal Skull](https://www.imdb.com/title/tt0367882/)_. The movie shows an alien with a crystal skull who seems to have knowledge on everything. This program, too, seems to have knowledge on everything 😉.
 
-You can view the HTTP API docs [here](https://neelkamath.gitlab.io/crystal-skull/).
+## Installation
 
-If you're forking the repo to develop the project as your own and not just to send back a PR, follow [these steps](docs/fork.md).
+You can try out the HTTP API using the development server `https://crystal-skull.herokuapp.com`. However, this server may be offline or serving a different API in the future. Hence, it's highly recommended to run your own instance as shown below.
 
-## [Installation](docs/installation.md)
-    
-## Usage
+### Running Your Own Instance
 
-The project neither contains nor needs any platform or vendor specific code, files, tools, or commands to deploy it since it has been containerized.
+Install [Docker v19](https://hub.docker.com/search/?type=edition&offering=community).
 
-Substitute `<GRADLE>` with `gradlew.bat` on Windows and `./gradlew` on others.
+To serve at `http://localhost:80`, run `docker run --rm -p 80:80 neelkamath/crytal-skull`. 
 
-### Developing the Server
+You can change the port by setting the `PORT` environment variable (e.g., `docker run --rm -e PORT=8080 -p 8080:8080 neelkamath/crytal-skull`).
 
-#### Running
+To run a particular version, run `docker run --rm -p 80:80 neelkamath/crytal-skull:<TAG>`, where `<TAG>` is from `https://hub.docker.com/r/neelkamath/crystal-skull/tags`.
 
-- Windows:
-    1. `gradlew.bat -t build`
-    1. In another terminal: `gradlew.bat run`
-- Other: `./gradlew -t build & ./gradlew run`
-
-The server will be running at `localhost:8080`, and has automatic reload enabled (i.e., the server needn't be recompiled when the code has been updated). You can change the port by setting the `PORT` environment variable.
-
-#### Testing
-
-- Server: `<GRADLE> test`
-- Spec: `spectral lint spec.oas3.json`
-
-#### Production
-
-A Dockerfile is used to run the server in production. Follow these steps to test running the server with Docker.
-1. `<GRADLE> build`
-1. `docker build -t crystal-skull .`
-1. Run at `http://localhost:8080` with `docker run -itp 8080:8080 --rm crystal-skull`. You can change the port by setting the `PORT` environment variable.
-
-### Documentation
-
-#### Developing
-
-`redoc-cli serve spec.oas3.json -wp 6969`
-
-Open `http://127.0.0.1:6969` in your browser. The documentation will automatically rebuild whenever you save a change to `spec.oas3.json`. Refresh the page whenever you want to view the updated documentation.
-
-We use port `6969` instead of the default `8080` because the development server usually uses that.
-
-#### Production
-
-`redoc-cli bundle spec.oas3.json -o public/index.html --title 'Crystal Skull'`
-
-Open `public/index.html` in your browser.
-
-### Generating an SDK
-
-1. Run `openapi-generator list`.
-
-    This will output something like:
-    ```
-    CLIENT generators:
-        - ada
-        - android
-        ...
-        - javascript
-        ...
-    SERVER generators:
-        - ada-server
-        - aspnetcore
-        ...
-    ```
-   Pick one of these.
-1. Run `openapi-generator generate -g <TARGET> -o <DIRECTORY> -i spec.oas3.json`, where `<TARGET>` is what you chose in the previous step, and `<DIRECTORY>` is the directory to output the generated SDK to. A documented and ready-to-use wrapper will now be available at `<DIRECTORY>`.
-
-For advanced use cases, please see the [OpenAPI Generator documentation](https://openapi-generator.tech/).
-
-### Mocking a Server
-
-`prism mock spec.oas3.json`
-
-The mock server will be running at the URL displayed on STDOUT.
+## [Usage](https://neelkamath.gitlab.io/crystal-skull/)
 
 ## Contributing
 
-The specification of the HTTP API, `spec.oas3.json`, is an OpenAPI v3 document.
+`openapi.yaml` is the specification for the HTTP API.
 
 CI/CD is setup to automatically update the hosted documentation and development server for all commits to the `master` branch which have passed the tests.
 
-When updating the version of Kotlin used, update the plugin version in the [build file](build.gradle.kts), the Docker images used in the [CI/CD file](.gitlab-ci.yml), and the version stated to install in the [installation document](docs/installation.md).
+Create a GitHub release for every new HTTP API version.
+
+When required, update the [Docker Hub repository](https://hub.docker.com/r/neelkamath/crystal-skull)'s **Overview**.
+
+If you're forking the repo to develop the project as your own and not just to send back a PR, follow [these steps](docs/fork.md).
+
+### Installation
+
+1. If you are developing the server, install [Java SE Development Kit 11](https://www.oracle.com/technetwork/java/javase/downloads/jdk11-downloads-5066655.html). 
+1. If you are testing the Dockerfile or running the app in production, install [Docker v19](https://hub.docker.com/search/?type=edition&offering=community).
+1. If you are generating an SDK, generating documentation, testing the spec, or mocking the server, install [node.js](https://nodejs.org/en/download/).
+1. If you are generating an SDK, run `npm i -g @openapitools/openapi-generator-cli`.
+1. If you are generating documentation, run `npm i -g redoc-cli`.
+1. If you are testing the spec, run `npm i -g @stoplight/spectral`.
+1. If you are mocking a server, run `npm i -g @stoplight/prism-cli`.
+1. Clone the repository using one of the following methods.
+    - SSH: `git clone git@github.com:neelkamath/crystal-skull.git`
+    - HTTPS: `git clone https://github.com/neelkamath/crystal-skull.git`
+
+### [Developing](docs/developing.md)
 
 ## Credits
 

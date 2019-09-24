@@ -6,6 +6,7 @@ import io.kotlintest.matchers.boolean.shouldBeTrue
 import io.kotlintest.matchers.collections.shouldContain
 import io.kotlintest.matchers.collections.shouldContainAll
 import io.kotlintest.matchers.collections.shouldContainExactlyInAnyOrder
+import io.kotlintest.matchers.collections.shouldHaveSize
 import io.kotlintest.matchers.withClue
 import io.kotlintest.shouldBe
 import io.kotlintest.specs.StringSpec
@@ -72,6 +73,10 @@ class ConfigurationTest : StringSpec() {
                 withClue("Questions with duplicate answers") { size shouldBe toSet().size }
             }
         }
+
+        "The generator mustn't crash while generating questions for every type" {
+            post(QuizRequest("Apple Inc.", configuration = QuizConfiguration(types = NamedEntity.values().toList())))
+        }
     }
 }
 
@@ -116,7 +121,7 @@ class QuestionGeneratorTest : StringSpec() {
                 ),
                 QuizConfiguration(listOf(NamedEntity.person), duplicates = Duplicates(duplicateAnswers))
             ).map { it.questionAnswer.answer }
-            withClue("Answers: $answers") { answers.size shouldBe if (duplicateAnswers) 2 else 1 }
+            withClue(answers.toString()) { answers shouldHaveSize if (duplicateAnswers) 2 else 1 }
         }
 
         "Multiple questions with the same answer must be preserved if duplicate answers are allowed" { test(true) }
