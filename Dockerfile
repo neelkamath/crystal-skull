@@ -13,4 +13,17 @@ ENV PORT 80
 EXPOSE 80
 HEALTHCHECK --timeout=5s --start-period=5s --retries=1 \
     CMD curl -f http://localhost:$PORT/health_check
-CMD ["java", "-server", "-jar", "crystal-skull-all.jar"]
+CMD [
+    "java",
+    "-server",
+    "-XX:+UnlockExperimentalVMOptions",
+    "-XX:+UseCGroupMemoryLimitForHeap",
+    "-XX:InitialRAMFraction=2",
+    "-XX:MinRAMFraction=2",
+    "-XX:MaxRAMFraction=2",
+    "-XX:+UseG1GC",
+    "-XX:MaxGCPauseMillis=100",
+    "-XX:+UseStringDeduplication",
+    "-jar",
+    "crystal-skull-all.jar"
+]
