@@ -47,17 +47,30 @@ object NameFinder {
 
     /** Parses English [documents] to find [entity]s. Sentences without [entity]s will be discarded. */
     @Synchronized
-    internal fun findNames(documents: List<Document>, entity: NamedEntity): List<ProcessedSentence> {
-        val list = mutableListOf<ProcessedSentence>()
-        val finder = nameFinders.getValue(entity).value
-        for (document in documents) {
-            for ((index, tokenizedSentence) in document.withIndex()) {
-                val spans = finder.find(tokenizedSentence.tokens.toTypedArray()).filter { it.prob >= .9 }
-                if (spans.isNotEmpty()) {
-                    list.add(process(spans, tokenizedSentence, document.elementAtOrNull(index - 1)?.sentence))
-                }
+    internal fun findNames(documents: List<Document>, entity: NamedEntity): List<ProcessedSentence> =
+        nameFinders.getValue(entity).value.let { finder ->
+            documents.flatMap {
+                findNames(it, entity, finder).also { finder.clearAdaptiveData() }
             }
-            finder.clearAdaptiveData()
+        }
+
+    /**
+     * Parses English [sentences] to find [entity]s. Sentences without [entity]s will be discarded.
+     *
+     * If you are parsing [Document]s for names, you can supply your own [finder] so that you can call
+     * [NameFinderME.clearAdaptiveData] for better results.
+     */
+    @Synchronized
+    internal fun findNames(
+        sentences: List<TokenizedSentence>,
+        entity: NamedEntity,
+        finder: NameFinderME = nameFinders.getValue(entity).value
+    ): List<ProcessedSentence> {
+        val list = mutableListOf<ProcessedSentence>()
+        for ((index, sentence) in sentences.withIndex()) {
+            finder.find(sentence.tokens.toTypedArray()).filter { it.prob >= .9 }.takeIf { it.isNotEmpty() }?.let {
+                list.add(process(it, sentence, sentences.elementAtOrNull(index - 1)?.sentence))
+            }
         }
         return list
     }

@@ -13,7 +13,7 @@ stages: [test, build, push, deploy]
 
 test-server:
   stage: test
-  image: openjdk:11
+  image: openjdk:8
   script: ./gradlew test
   artifacts:
     paths: [build/reports/tests/test/]
@@ -23,14 +23,14 @@ test-spec:
   image: node
   script:
     - npm i -g @stoplight/spectral
-    - spectral lint openapi.yaml
+    - spectral lint docs/openapi.yaml
 
 build-image:
   stage: build
   image: docker:dind
   script:
     - echo $CI_REGISTRY_PASSWORD | docker login -u $CI_REGISTRY_USER --password-stdin $CI_REGISTRY
-    - export version=$(grep version openapi.yaml)
+    - export version=$(grep version docs/openapi.yaml)
     - 'echo ${version#*: } > image_tag.txt'
     - docker build -t $CI_REGISTRY_IMAGE -t $CI_REGISTRY_IMAGE:$(cat image_tag.txt) .
     - docker push $CI_REGISTRY_IMAGE
@@ -81,7 +81,7 @@ pages:
   image: node
   script:
     - npm i -g redoc-cli
-    - redoc-cli bundle spec.oas3.json -o public/index.html --title 'Crystal Skull'
+    - redoc-cli bundle docs/openapi.yaml -o public/index.html --title 'Crystal Skull'
   artifacts:
     paths: [public]
   only: [master]

@@ -2,13 +2,13 @@
 
 ![Crystal Skull](crystal_skull.jpg)
 
-For developers who want to build an innovative quiz app, Crystal Skull is a server that generates complete quizzes using just a topic name. Unlike other quiz generators, our product is unique and easy to use.
+For developers who want to build an innovative quiz app, Crystal Skull is a server that generates complete quizzes using just a topic name or supplied text. Unlike other quiz generators, our product is unique and easy to use.
 
 The name _Crystal Skull_ comes from the movie _[Indiana Jones and the Kingdom of the Crystal Skull](https://www.imdb.com/title/tt0367882/)_. The movie shows an alien with a crystal skull who seems to have knowledge on everything. This program, too, seems to have knowledge on everything 😉.
 
 ## Installation
 
-You can try out the HTTP API using the development server `https://crystal-skull.herokuapp.com`. However, this server may be offline or serving a different API in the future. Hence, it's highly recommended to run your own instance as shown below.
+You can try out the HTTP API using the development server `https://crystal-skull.herokuapp.com`. However, this server may be offline or serving a different API in the future. Hence, it's highly recommended to run your own instance.
 
 ### Running Your Own Instance
 
@@ -20,34 +20,37 @@ You can change the port by setting the `PORT` environment variable (e.g., `docke
 
 To run a particular version, run `docker run --rm -p 80:80 neelkamath/crytal-skull:<TAG>`, where `<TAG>` is from `https://hub.docker.com/r/neelkamath/crystal-skull/tags`.
 
+The container `EXPOSE`s port `80`.
+
+### Generating an SDK
+
+You can generate an API wrapper to use the HTTP API using these steps.
+
+1. Install [node.js](https://nodejs.org/en/download/).
+1. `npm i -g @openapitools/openapi-generator-cli`.
+1. Run `openapi-generator list`.
+
+    This will output something like:
+    ```
+    CLIENT generators:
+        - ada
+        - android
+        ...
+        - javascript
+        ...
+    SERVER generators:
+        - ada-server
+        - aspnetcore
+        ...
+    ```
+    Pick one of these (e.g., `javascript`).
+1. Run `openapi-generator generate -g <TARGET> -o <DIRECTORY> -i https://raw.githubusercontent.com/neelkamath/crystal-skull/master/docs/openapi.yaml`, where `<TARGET>` is what you picked, and `<DIRECTORY>` is the directory to output the generated SDK to. A documented and ready-to-use wrapper will now be available at `<DIRECTORY>`.
+
+For advanced use cases, please see the [OpenAPI Generator documentation](https://openapi-generator.tech/).
+
 ## [Usage](https://neelkamath.gitlab.io/crystal-skull/)
 
-## Contributing
-
-`openapi.yaml` is the specification for the HTTP API.
-
-CI/CD is setup to automatically update the hosted documentation and development server for all commits to the `master` branch which have passed the tests.
-
-Create a GitHub release for every new HTTP API version.
-
-When required, update the [Docker Hub repository](https://hub.docker.com/r/neelkamath/crystal-skull)'s **Overview**.
-
-If you're forking the repo to develop the project as your own and not just to send back a PR, follow [these steps](docs/fork.md).
-
-### Installation
-
-1. If you are developing the server, install [Java SE Development Kit 11](https://www.oracle.com/technetwork/java/javase/downloads/jdk11-downloads-5066655.html). 
-1. If you are testing the Dockerfile or running the app in production, install [Docker v19](https://hub.docker.com/search/?type=edition&offering=community).
-1. If you are generating an SDK, generating documentation, testing the spec, or mocking the server, install [node.js](https://nodejs.org/en/download/).
-1. If you are generating an SDK, run `npm i -g @openapitools/openapi-generator-cli`.
-1. If you are generating documentation, run `npm i -g redoc-cli`.
-1. If you are testing the spec, run `npm i -g @stoplight/spectral`.
-1. If you are mocking a server, run `npm i -g @stoplight/prism-cli`.
-1. Clone the repository using one of the following methods.
-    - SSH: `git clone git@github.com:neelkamath/crystal-skull.git`
-    - HTTPS: `git clone https://github.com/neelkamath/crystal-skull.git`
-
-### [Developing](docs/developing.md)
+## [Contributing](docs/contributing.md)
 
 ## Credits
 

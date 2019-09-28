@@ -51,7 +51,9 @@ class YearContainerTest : StringSpec({
 class EntityGeneratorTest : StringSpec({
     "Randomly generated dates must look real" {
         val month = Regex("""(January|February|March|April|May|June|July|August|September|October|November|December)""")
-        getRandomEntity(NamedEntity.date) shouldMatch Regex("""$month ([1-9]|[12][0-9]|3[01]), \d\d\d\d""")
+        repeat(100) {
+            getRandomEntity(NamedEntity.date) shouldMatch Regex("""$month ([1-9]|[12][0-9]|3[01]), \d\d\d\d""")
+        }
     }
 
     "Randomly generated percentages must look real" {
@@ -60,5 +62,7 @@ class EntityGeneratorTest : StringSpec({
 })
 
 class TimeGeneratorTest : StringSpec({
-    "Randomly generated times must look real" { getRandomTime() shouldMatch Regex("""\d\d:\d\d [AP]M""") }
+    "Randomly generated times must look real" {
+        repeat(100) { getRandomTime() shouldMatch Regex("""\d\d:\d\d [AP]M""") }
+    }
 })
