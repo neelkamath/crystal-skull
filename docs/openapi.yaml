@@ -280,10 +280,5 @@ paths:
       description: Checks if all systems are operational
       operationId: healthCheck
       responses:
-        200:
+        204:
           description: All systems are operational
-          content:
-            text/plain; charset=utf-8:
-              schema:
-                example: OK
-                type: string
