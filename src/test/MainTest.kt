@@ -123,7 +123,7 @@ class TopicFinderTest : StringSpec({
     "Related topics must be sorted in order of relevance" {
         findRelatedTopics(
             listOf("Bob was born in Mexico.", "Bob moved from Mexico to Canada, and then back to Mexico again.")
-        ) shouldBe listOf("Mexico", "Bob", "Canada")
+        ) shouldBe listOf("Mexico", "Canada")
     }
 })
 
