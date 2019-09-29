@@ -54,9 +54,9 @@ private suspend fun quizTopic(request: QuizRequest): QuizResponse {
 }
 
 /** Creates a [QuizResponse] for a non-null [QuizRequest.text]. */
-private fun quizText(request: QuizRequest): QuizResponse = with(request) {
+private suspend fun quizText(request: QuizRequest): QuizResponse = with(request) {
     val processedSentences = processSentences(text!!, configuration)
-    QuizResponse(assembleQuestions(processedSentences, configuration, max))
+    QuizResponse(assembleQuestions(processedSentences, configuration, max), related = findRelatedTopics(text))
 }
 
 /** Processes [sections] of text (e.g., a section on the early life of Bill Gates) according to the [configuration]. */
@@ -80,6 +80,23 @@ private fun filterSentences(sentences: List<ProcessedSentence>): List<ProcessedS
         if (processed.context.sentence !in list.map { it.context.sentence }) list.add(processed)
         list
     }
+
+/** Finds topics related to [sections] on Wikipedia (ordered with the most relevant first). */
+internal suspend fun findRelatedTopics(sections: List<String>): List<String> {
+    val entities = listOf(NamedEntity.person, NamedEntity.organization, NamedEntity.location).flatMap { entity ->
+        findNames(sections.map { tokenize(it) }, entity).flatMap { it.names }
+    }
+    return entities
+        .associateWith { entity ->
+            entities.count { it == entity }
+        }
+        .toList()
+        .sortedByDescending { it.second }
+        .map { it.first }
+        .filter { entity ->
+            search(entity).let { it.isNotEmpty() && it[0].title == entity }
+        }
+}
 
 /** Generates [QuizQuestion]s from [sentences] as stated in the [configuration]. */
 internal fun generateQuestions(

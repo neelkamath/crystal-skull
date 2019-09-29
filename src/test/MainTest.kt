@@ -119,6 +119,14 @@ private fun post(request: QuizRequest): QuizResponse = withTestApplication(Appli
     }.response.run { Gson().fromJson(content, QuizResponse::class.java) }
 }
 
+class TopicFinderTest : StringSpec({
+    "Related topics must be sorted in order of relevance" {
+        findRelatedTopics(
+            listOf("Bob was born in Mexico.", "Bob moved from Mexico to Canada, and then back to Mexico again.")
+        ) shouldBe listOf("Mexico", "Bob", "Canada")
+    }
+})
+
 class QuestionGeneratorTest : StringSpec() {
     init {
         val test = { duplicateAnswers: Boolean ->

@@ -47,30 +47,16 @@ object NameFinder {
 
     /** Parses English [documents] to find [entity]s. Sentences without [entity]s will be discarded. */
     @Synchronized
-    internal fun findNames(documents: List<Document>, entity: NamedEntity): List<ProcessedSentence> =
-        nameFinders.getValue(entity).value.let { finder ->
-            documents.flatMap {
-                findNames(it, entity, finder).also { finder.clearAdaptiveData() }
-            }
-        }
-
-    /**
-     * Parses English [sentences] to find [entity]s. Sentences without [entity]s will be discarded.
-     *
-     * If you are parsing [Document]s for names, you can supply your own [finder] so that you can call
-     * [NameFinderME.clearAdaptiveData] for better results.
-     */
-    @Synchronized
-    internal fun findNames(
-        sentences: List<TokenizedSentence>,
-        entity: NamedEntity,
-        finder: NameFinderME = nameFinders.getValue(entity).value
-    ): List<ProcessedSentence> {
+    internal fun findNames(documents: List<Document>, entity: NamedEntity): List<ProcessedSentence> {
         val list = mutableListOf<ProcessedSentence>()
-        for ((index, sentence) in sentences.withIndex()) {
-            finder.find(sentence.tokens.toTypedArray()).filter { it.prob >= .9 }.takeIf { it.isNotEmpty() }?.let {
-                list.add(process(it, sentence, sentences.elementAtOrNull(index - 1)?.sentence))
+        val finder = nameFinders.getValue(entity).value
+        for (document in documents) {
+            for ((index, sentence) in document.withIndex()) {
+                finder.find(sentence.tokens.toTypedArray()).filter { it.prob >= .9 }.takeIf { it.isNotEmpty() }?.let {
+                    list.add(process(it, sentence, document.elementAtOrNull(index - 1)?.sentence))
+                }
             }
+            finder.clearAdaptiveData()
         }
         return list
     }
@@ -80,22 +66,24 @@ object NameFinder {
      *
      * If there was one, include the [previous] sentence to [tokenizedSentence].
      */
-    private fun process(spans: List<Span>, tokenizedSentence: TokenizedSentence, previous: String?): ProcessedSentence =
-        ProcessedSentence(
+    private fun process(spans: List<Span>, tokenizedSentence: TokenizedSentence, previous: String?): ProcessedSentence {
+        if (spans.any { it.type != spans[0].type }) throw Error("All <spans> must have the same <Span.type>")
+        return ProcessedSentence(
             ProcessedContext(tokenizedSentence.sentence, previous),
             NamedEntity.valueOf(spans[0].type),
-            spans.map { span ->
-                tokenizedSentence
-                    .tokens
-                    .slice(span.start until span.end)
-                    .joinToString(" ")
-                    .let { if (it.endsWith(" .")) it.replace(Regex("""( \.)$"""), ".") else it }
-                    .replace(" '", "'")
-                    .replace(" , ", ", ")
-                    .replace(" %", "%")
-                    .let { if (spans[0].type == "money" && isSymbol(it)) it.replaceFirst(" ", "") else it }
-            }
+            spans.map { detokenizeNames(tokenizedSentence.tokens, it) }
         )
+    }
+
+    /** Gets the entity [span]ned in [tokens]. */
+    private fun detokenizeNames(tokens: List<String>, span: Span): String = tokens
+        .slice(span.start until span.end)
+        .joinToString(" ")
+        .let { if (it.endsWith(" .")) it.replace(Regex("""( \.)$"""), ".") else it }
+        .replace(" '", "'")
+        .replace(" , ", ", ")
+        .replace(" %", "%")
+        .let { if (span.type == "money" && isSymbol(it)) it.replaceFirst(" ", "") else it }
 
     private fun isSymbol(string: String) = with(string.split(" ")[0]) { length == 1 && !matches(Regex("""^(\w|\d)""")) }
 }

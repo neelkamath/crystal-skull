@@ -50,7 +50,7 @@ For advanced use cases, please see the [OpenAPI Generator documentation](https:/
 
 ## [Usage](https://neelkamath.gitlab.io/crystal-skull/)
 
-## [Contributing](docs/contributing.md)
+## [Contributing](docs/CONTRIBUTING.md)
 
 ## Credits
 
