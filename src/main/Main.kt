@@ -34,7 +34,7 @@ fun Application.main() {
                 call.respond(if (request.text != null) quizText(request) else quizTopic(request))
             }
         }
-        get("health_check") { call.respond("OK") }
+        get("health_check") { call.respond(HttpStatusCode.NoContent) }
     }
 }
 
