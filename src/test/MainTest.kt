@@ -30,11 +30,11 @@ class SearchTest : StringSpec({
 
 class MetadataTest : StringSpec({
     "Generating a quiz for a particular topic must return a quiz for the same topic" {
-        "Apple".let { post(QuizRequest(it)).metadata.topic shouldBe it }
+        "Apple".let { post(QuizRequest(it)).metadata!!.topic shouldBe it }
     }
 
     "Generating a quiz for a particular topic must return the correct source page's URL" {
-        post(QuizRequest("John Mayer Trio")).metadata.url shouldBe "https://en.wikipedia.org/wiki/John_Mayer_Trio"
+        post(QuizRequest("John Mayer Trio")).metadata!!.url shouldBe "https://en.wikipedia.org/wiki/John_Mayer_Trio"
     }
 })
 
@@ -75,16 +75,16 @@ class ConfigurationTest : StringSpec() {
         }
 
         "The generator mustn't crash while generating questions for every type" {
-            post(QuizRequest("Apple Inc.", configuration = QuizConfiguration(types = NamedEntity.values().toList())))
+            post(QuizRequest("Apple Inc.", QuizConfiguration(types = NamedEntity.values().toList())))
         }
     }
 }
 
 class RelatedQuizTest : StringSpec({
     "Topics related to to the one the quiz was generated on should allow for quizzes to be generated for them" {
-        post(QuizRequest("Apple Inc.")).related!!.associateWith { post(QuizRequest(it)).metadata.topic }.map {
-            it.value shouldBe it.key
-        }
+        post(QuizRequest("Apple Inc.")).related!!
+            .associateWith { post(QuizRequest(it)).metadata!!.topic }
+            .map { it.value shouldBe it.key }
     }
 })
 
@@ -103,6 +103,14 @@ class ShuffledOptionsTest : StringSpec({
     }
 })
 
+class TextSupplierTest : StringSpec({
+    "Quizzes must generate using the supplied text" {
+        val text = listOf("Bob attended Harvard Business School.", "Bob married Nancy Drew in August 1976.")
+        val quiz = post(QuizRequest(text = text)).quiz
+        withClue("Request: $text\nResponse: $quiz") { quiz shouldHaveSize 2 }
+    }
+})
+
 /** Makes an HTTP POST [request] to the `/quiz` endpoint. */
 private fun post(request: QuizRequest): QuizResponse = withTestApplication(Application::main) {
     handleRequest(HttpMethod.Post, "quiz") {
@@ -110,6 +118,14 @@ private fun post(request: QuizRequest): QuizResponse = withTestApplication(Appli
         setBody(Gson().toJson(request))
     }.response.run { Gson().fromJson(content, QuizResponse::class.java) }
 }
+
+class TopicFinderTest : StringSpec({
+    "Related topics must be sorted in order of relevance" {
+        findRelatedTopics(
+            listOf("Bob was born in Mexico.", "Bob moved from Mexico to Canada, and then back to Mexico again.")
+        ) shouldBe listOf("Mexico", "Canada")
+    }
+})
 
 class QuestionGeneratorTest : StringSpec() {
     init {

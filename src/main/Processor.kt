@@ -51,10 +51,9 @@ object NameFinder {
         val list = mutableListOf<ProcessedSentence>()
         val finder = nameFinders.getValue(entity).value
         for (document in documents) {
-            for ((index, tokenizedSentence) in document.withIndex()) {
-                val spans = finder.find(tokenizedSentence.tokens.toTypedArray()).filter { it.prob >= .9 }
-                if (spans.isNotEmpty()) {
-                    list.add(process(spans, tokenizedSentence, document.elementAtOrNull(index - 1)?.sentence))
+            for ((index, sentence) in document.withIndex()) {
+                finder.find(sentence.tokens.toTypedArray()).filter { it.prob >= .9 }.takeIf { it.isNotEmpty() }?.let {
+                    list.add(process(it, sentence, document.elementAtOrNull(index - 1)?.sentence))
                 }
             }
             finder.clearAdaptiveData()
@@ -67,22 +66,24 @@ object NameFinder {
      *
      * If there was one, include the [previous] sentence to [tokenizedSentence].
      */
-    private fun process(spans: List<Span>, tokenizedSentence: TokenizedSentence, previous: String?): ProcessedSentence =
-        ProcessedSentence(
+    private fun process(spans: List<Span>, tokenizedSentence: TokenizedSentence, previous: String?): ProcessedSentence {
+        if (spans.any { it.type != spans[0].type }) throw Error("All <spans> must have the same <Span.type>")
+        return ProcessedSentence(
             ProcessedContext(tokenizedSentence.sentence, previous),
             NamedEntity.valueOf(spans[0].type),
-            spans.map { span ->
-                tokenizedSentence
-                    .tokens
-                    .slice(span.start until span.end)
-                    .joinToString(" ")
-                    .let { if (it.endsWith(" .")) it.replace(Regex("""( \.)$"""), ".") else it }
-                    .replace(" '", "'")
-                    .replace(" , ", ", ")
-                    .replace(" %", "%")
-                    .let { if (spans[0].type == "money" && isSymbol(it)) it.replaceFirst(" ", "") else it }
-            }
+            spans.map { detokenizeNames(tokenizedSentence.tokens, it) }
         )
+    }
+
+    /** Gets the entity [span]ned in [tokens]. */
+    private fun detokenizeNames(tokens: List<String>, span: Span): String = tokens
+        .slice(span.start until span.end)
+        .joinToString(" ")
+        .let { if (it.endsWith(" .")) it.replace(Regex("""( \.)$"""), ".") else it }
+        .replace(" '", "'")
+        .replace(" , ", ", ")
+        .replace(" %", "%")
+        .let { if (span.type == "money" && isSymbol(it)) it.replaceFirst(" ", "") else it }
 
     private fun isSymbol(string: String) = with(string.split(" ")[0]) { length == 1 && !matches(Regex("""^(\w|\d)""")) }
 }

@@ -1,8 +1,5 @@
 package com.neelkamath.crystalskull
 
-import com.neelkamath.kwikipedia.search
-import kotlinx.coroutines.runBlocking
-
 /** Search results for a topic. */
 internal data class SearchResponse(val topics: List<Topic>)
 
@@ -10,16 +7,27 @@ internal data class SearchResponse(val topics: List<Topic>)
 internal data class Topic(val topic: String, val description: String)
 
 /**
- * Request to generate a quiz for a Wikipedia [topic] (e.g., `"Apple Inc."`).
+ * Request to generate a quiz either on a Wikipedia [topic] or the supplied [text].
+ *
+ * Each item in the [List] of [text] is a subtopic (e.g., Early Life, Career) on the same topic (e.g., Bill Gates).
  *
  * The quiz mustn't contain more than [max] questions. If `null`, the quiz should contain all the questions generated
  * while respecting the [configuration].
  */
 internal data class QuizRequest(
-    val topic: String = runBlocking { search()[0].title },
+    val topic: String? = null,
     val configuration: QuizConfiguration = QuizConfiguration(),
-    val max: Int? = null
-)
+    val max: Int? = null,
+    val text: List<String>? = null
+) {
+    init {
+        if (topic != null && text != null) throw Error(invalidMessage)
+    }
+
+    companion object {
+        internal const val invalidMessage = "Both <topic> and <text> cannot be non-null"
+    }
+}
 
 /**
  * Configuration for the quiz generator.
@@ -54,10 +62,18 @@ internal data class Duplicates(val duplicateAnswers: Boolean = false, val duplic
 /** The type of entity for NLP named entity recognition. */
 internal enum class NamedEntity { date, location, money, organization, percentage, person, time }
 
-/** The topics [related] to the [quiz] can also have quizzes generated for them. */
-internal data class QuizResponse(val metadata: QuizMetadata, val quiz: List<QuizQuestion>, val related: List<String>?)
+/**
+ * The topics [related] to the [quiz] can also have quizzes generated for them.
+ *
+ * [metadata] will not be `null` only if the quiz was generated using a topic name.
+ */
+internal data class QuizResponse(
+    val quiz: List<QuizQuestion>,
+    val metadata: QuizMetadata? = null,
+    val related: List<String>? = null
+)
 
-/** The [topic] a quiz was generated on from a [url]. */
+/** The [url] of the [topic] a quiz was generated on. */
 internal data class QuizMetadata(val topic: String, val url: String)
 
 /** A [questionAnswer] with a specific [type] of [QuestionAnswer.options]. */

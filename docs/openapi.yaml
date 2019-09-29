@@ -2,7 +2,9 @@ openapi: 3.0.2
 info:
   title: Crystal Skull API
   version: 0.1.0
-  description: Generates an entire quiz in English with just a topic name, or even nothing at all for a random one.
+  description:
+    Generates an entire quiz in English with just a topic name, or even nothing at all for a random one. You can also
+    generate a quiz off of text you supply.
   contact:
     name: Neel Kamath
     email: neelkamath@icloud.com
@@ -16,8 +18,7 @@ servers:
 paths:
   /search:
     get:
-      tags:
-        - search
+      tags: [search]
       description: Searches for topics to generate a quiz on
       operationId: searchTopics
       parameters:
@@ -58,15 +59,11 @@ paths:
                         description:
                           description: Topic description
                           type: string
-                      required:
-                        - topic
-                        - description
-                required:
-                  - topics
+                      required: [topic, description]
+                required: [topics]
   /quiz:
     post:
-      tags:
-        - generate
+      tags: [quiz]
       description:
         This generates an entire quiz containing fill-in-the-blank questions for either a random topic, or the one
         specified.
@@ -75,20 +72,33 @@ paths:
         description: Configures how the quiz will be generated
         content:
           application/json:
+            examples:
+              topic:
+                summary: Generating a quiz for a topic
+                value:
+                  topic: Apple Inc.
+                  configuration:
+                    types:
+                      - date
+                      - organization
+                      - person
+              text:
+                summary: Generating a quiz off of supplied text
+                value:
+                  text:
+                    - Bill Gates was born in Seattle. His father was a lawyer.
+                    - The trade name "Microsoft" was registered on November 26, 1976. Microsoft launched its first
+                      retail version of Windows in 1985.
             schema:
-              example:
-                topic: Apple Inc.
-                configuration:
-                  types:
-                    - date
-                    - organization
-                    - person
               type: object
               properties:
                 topic:
-                  description:
-                    This is the topic to generate the quiz on. You should get it from performing an HTTP GET request to
-                    the `/search` endpoint. If nothing is specified, a random topic is chosen.
+                  description: |
+                    Generate a quiz for this topic. You must get the topic name by performing an HTTP GET request to the
+                    `/search` endpoint.
+
+                    If this key is sent, don't send the `"text"` key. If both the `"topic"` and `"text"` keys aren't
+                    sent, a random topic will be chosen.
                   type: string
                 configuration:
                   type: object
@@ -98,11 +108,7 @@ paths:
                       description:
                         These are the types of questions generated. The possible values are `"date"`, `"location"`,
                         `"money"`, `"organization"`, `"percentage"`, `"person"`, and `"time"`.
-                      default:
-                        - date
-                        - location
-                        - organization
-                        - person
+                      default: [date, location, organization, person]
                       minItems: 1
                       type: array
                       items:
@@ -145,45 +151,59 @@ paths:
                     The maximum number of questions to return. Quizzes may contain hundreds of questions. If you only
                     need a certain number, specifying a maximum number to send back will reduce the download size.
                   type: integer
+                text:
+                  description: |
+                    Generate a quiz off of this text. You can enhance the accuray of the generated questions by
+                    splitting the text into its respective subtopics. For example, if the text is on the topic of Bill
+                    Gates, you can split it into multiple `string`s such as for "Early Life", "Career", etc.
+
+                    If this key is sent, don't send the `"topic"` key.
+                  type: array
+                  items:
+                    type: string
       responses:
         200:
           description: Generated quiz
           content:
             application/json:
+              examples:
+                topic:
+                  summary: Quiz on a topic
+                  value:
+                    quiz:
+                      - questionAnswer:
+                          questionContext:
+                            question: In 1996, Spindler was replaced by Gil Amelio as CEO.
+                          options: [Steve Jobs, Gil Amelio, Steve Wozniak, Ronald Wayne]
+                          answerOffset:
+                            start: 34
+                            end: 44
+                        type: person
+                    metadata:
+                      topic: Apple Inc.
+                      url: https://en.wikipedia.org/wiki/Apple_Inc.
+                    related: [Pixar]
+                text:
+                  summary: Quiz for supplied text
+                  value:
+                    quiz:
+                      - questionAnswer:
+                          questionContext:
+                            question: Microsoft launched its first retail version of Windows in 1985.
+                            context: The trade name "Microsoft" was registered on November 26, 1976.
+                          options:
+                            - June 12, 1956
+                            - November 26, 1976
+                            - 1985, September 27
+                            - '1967'
+                          answerOffset:
+                            start: 58
+                            end: 62
+                        type: date
+                    related: [Bill Gates, Seattle]
               schema:
-                example:
-                  metadata:
-                    topic: Apple Inc.
-                    url: https://en.wikipedia.org/wiki/Apple_Inc.
-                  quiz:
-                    - questionAnswer:
-                        questionContext:
-                          question: In 1996, Spindler was replaced by Gil Amelio as CEO.
-                        options:
-                          - Steve Jobs
-                          - Gil Amelio
-                          - Steve Wozniak
-                          - Ronald Wayne
-                        answerOffset:
-                          start: 34
-                          end: 44
-                      type: person
-                  related:
-                    - Pixar
                 type: object
                 properties:
-                  metadata:
-                    type: object
-                    properties:
-                      topic:
-                        description: The topic used to generate the quiz
-                        type: string
-                      url:
-                        description: URL of the Wikipedia page used to generate the quiz
-                        type: string
-                    required:
-                      - topic
-                      - url
                   quiz:
                     type: array
                     items:
@@ -208,8 +228,7 @@ paths:
                                     anyway).
                                   type: string
                                   nullable: true
-                              required:
-                                - question
+                              required: [question]
                             options:
                               description: Possible answers
                               type: array
@@ -227,46 +246,44 @@ paths:
                                 end:
                                   type: integer
                                   description: Ending offset
-                              required:
-                                - start
-                                - end
-                          required:
-                            - questionContext
-                            - answerOffset
-                            - options
+                              required: [start, end]
+                          required: [questionContext, answerOffset, options]
                         type:
                           description: Type of question
                           type: string
-                          enum:
-                            - date
-                            - location
-                            - money
-                            - organization
-                            - percentage
-                            - person
-                            - time
-                      required:
-                        - questionAnswer
-                        - type
+                          enum: [date, location, money, organization, percentage, person, time]
+                      required: [questionAnswer, type]
+                  metadata:
+                    description: This will be present if the quiz was generated for a topic, but not for supplied text.
+                    type: object
+                    properties:
+                      topic:
+                        description: This was the topic used to generate the quiz.
+                        type: string
+                      url:
+                        description: This is the URL of the Wikipedia page used to generate the quiz.
+                        type: string
                   related:
                     type: array
                     items:
                       type: string
                     description: Quizzes can be generated for these related topics.
-                required:
-                  - metadata
-                  - quiz
+                required: [quiz]
+        400:
+          description: Invalid payload
+          content:
+            text/plain; charset=utf-8:
+              example: Both <topic> and <text> cannot be non-null
   /health_check:
     get:
-      tags:
-        - status
+      tags: [status]
       description: Checks if all systems are operational
       operationId: healthCheck
       responses:
         200:
           description: All systems are operational
           content:
-            text/plain:
+            text/plain; charset=utf-8:
               schema:
                 example: OK
                 type: string
