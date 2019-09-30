@@ -30,13 +30,23 @@ build-image:
   image: docker:dind
   script:
     - echo $CI_REGISTRY_PASSWORD | docker login -u $CI_REGISTRY_USER --password-stdin $CI_REGISTRY
-    - export version=$(grep version docs/openapi.yaml)
-    - 'echo ${version#*: } > image_tag.txt'
-    - docker build -t $CI_REGISTRY_IMAGE -t $CI_REGISTRY_IMAGE:$(cat image_tag.txt) .
+    - export version=$(grep version docs/openapi.yaml -m 1)
+    - 'echo ${version#*: } > version.txt'
+    - docker build -t $CI_REGISTRY_IMAGE -t $CI_REGISTRY_IMAGE:$(cat version.txt) .
     - docker push $CI_REGISTRY_IMAGE
-    - docker push $CI_REGISTRY_IMAGE:$(cat image_tag.txt)
+    - docker push $CI_REGISTRY_IMAGE:$(cat version.txt)
   artifacts:
-    paths: [image_tag.txt]
+    paths: [version.txt]
+  only: [master]
+
+build-docs:
+  stage: build
+  image: node
+  script:
+    - npm i -g redoc-cli
+    - redoc-cli bundle docs/openapi.yaml --title 'Crystal Skull'
+  artifacts:
+    paths: [redoc-static.html]
   only: [master]
 
 docker-hub:
@@ -45,11 +55,11 @@ docker-hub:
   script:
     - echo $DOCKER_HUB_PASSWORD | docker login -u $DOCKER_HUB_USER --password-stdin https://index.docker.io/v1/
     - docker pull $CI_REGISTRY_IMAGE
-    - docker pull $CI_REGISTRY_IMAGE:$(cat image_tag.txt)
+    - docker pull $CI_REGISTRY_IMAGE:$(cat version.txt)
     - docker tag $CI_REGISTRY_IMAGE $DOCKER_HUB_USER/crystal-skull
-    - docker tag $CI_REGISTRY_IMAGE:$(cat image_tag.txt) $DOCKER_HUB_USER/crystal-skull:$(cat image_tag.txt)
+    - docker tag $CI_REGISTRY_IMAGE:$(cat version.txt) $DOCKER_HUB_USER/crystal-skull:$(cat version.txt)
     - docker push $DOCKER_HUB_USER/crystal-skull
-    - docker push $DOCKER_HUB_USER/crystal-skull:$(cat image_tag.txt)
+    - docker push $DOCKER_HUB_USER/crystal-skull:$(cat version.txt)
   only: [master]
 
 heroku-push:
@@ -76,12 +86,17 @@ heroku-release:
       -H "Authorization: Bearer $HEROKU_AUTH_TOKEN"
   only: [master]
 
+github-release:
+  stage: deploy
+  image: openjdk:8
+  script: ./gradlew githubRelease -PGITHUB_TOKEN=$GITHUB_TOKEN
+  only: [master]
+
 pages:
   stage: deploy
-  image: node
   script:
-    - npm i -g redoc-cli
-    - redoc-cli bundle docs/openapi.yaml -o public/index.html --title 'Crystal Skull'
+    - mkdir public
+    - cp redoc-static.html public/index.html
   artifacts:
     paths: [public]
   only: [master]

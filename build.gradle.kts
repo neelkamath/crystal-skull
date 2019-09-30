@@ -2,7 +2,10 @@ plugins {
     kotlin("jvm") version "1.3.50"
     application
     id("com.github.johnrengelman.shadow") version "5.1.0"
+    id("com.github.breadmoirai.github-release") version "2.2.9"
 }
+
+version = "0.1.0"
 
 application.mainClassName = "io.ktor.server.netty.EngineMain"
 
@@ -31,4 +34,15 @@ kotlin.sourceSets {
 
 tasks.withType<Jar> {
     manifest { attributes(mapOf("Main-Class" to application.mainClassName)) }
+}
+
+if (gradle.startParameter.taskNames.contains("githubRelease")) {
+    githubRelease {
+        token(property("GITHUB_TOKEN") as String)
+        owner("neelkamath")
+        body("Download and open the release asset, `redoc-static.html`, in your browser to view the HTTP API documentation.")
+        overwrite(true)
+        prerelease(project.version.toString().startsWith("0"))
+        releaseAssets("redoc-static.html")
+    }
 }

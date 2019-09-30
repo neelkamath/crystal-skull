@@ -51,3 +51,7 @@ Open `public/index.html` in your browser.
 `prism mock docs/openapi.yaml`
 
 The mock server will be running at `http://localhost:4010`.
+
+## Releases
+
+Bump the HTTP API version in `docs/openapi.yaml` and `build.gradle.kts`, and commit to the `master` branch. If the tests pass, a git tag and GitHub release will automatically be created.

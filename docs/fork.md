@@ -13,6 +13,13 @@
     1. Enter an **Access Token Description**.
     1. Click **Create**.
     1. Note down your access token for later.
+1. Set up releases.
+    1. Go to your [GitHub settings](https://github.com/settings/tokens).
+    1. Click **Generate new token**.
+    1. Enter a **Note**.
+    1. Select the **repo** scope.
+    1. Click **Generate token**.
+    1. Note down your personal access token for later.
 1. Set up CI/CD.
     1. Create a [GitLab](https://gitlab.com/users/sign_in#register-pane) account.
     1. [Connect](https://docs.gitlab.com/ee/ci/ci_cd_for_external_repos/github_integration.html) the GitHub repo to a GitLab repo.
@@ -24,3 +31,4 @@
         |`HEROKU_AUTH_TOKEN`|Your Heroku API key (obtained from the **API Key** section in [your profile](https://dashboard.heroku.com/account))|Yes|
         |`DOCKER_HUB_USER`|Your Docker Hub username|No|
         |`DOCKER_HUB_PASSWORD`|The Docker Hub access token you noted down|Yes|
+        |`GITHUB_TOKEN`|The GitHub personal access token you noted down|Yes|

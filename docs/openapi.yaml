@@ -1,10 +1,12 @@
 openapi: 3.0.2
 info:
   title: Crystal Skull API
-  version: 0.1.0
-  description:
+  version: v0.1.0
+  description: |
     Generates an entire quiz in English with just a topic name, or even nothing at all for a random one. You can also
     generate a quiz off of text you supply.
+
+    You can view the documentation for previous versions [here](https://github.com/neelkamath/crystal-skull/releases).
   contact:
     name: Neel Kamath
     email: neelkamath@icloud.com
