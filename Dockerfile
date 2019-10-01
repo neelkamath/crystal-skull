@@ -7,7 +7,7 @@ RUN ./gradlew shadowJar
 
 FROM openjdk:8-jre-alpine
 RUN apk --no-cache add curl
-COPY --from=builder /app/build/libs/crystal-skull-all.jar crystal-skull-all.jar
+COPY --from=builder /app/build/libs/*.jar crystal-skull-all.jar
 COPY --from=builder /app/build/resources/main/ src/main/resources/
 ENV PORT 80
 EXPOSE 80

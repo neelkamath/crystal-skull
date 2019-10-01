@@ -1,11 +1,11 @@
 plugins {
-    kotlin("jvm") version "1.3.50"
     application
+    kotlin("jvm") version "1.3.50"
     id("com.github.johnrengelman.shadow") version "5.1.0"
     id("com.github.breadmoirai.github-release") version "2.2.9"
 }
 
-version = "0.1.0"
+version = 0
 
 application.mainClassName = "io.ktor.server.netty.EngineMain"
 

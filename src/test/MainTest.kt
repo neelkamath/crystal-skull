@@ -41,7 +41,7 @@ class MetadataTest : StringSpec({
 class ConfigurationTest : StringSpec() {
     /** Filters options from questions in the [response] having type [NamedEntity.date]. */
     private fun getDateOptions(response: QuizResponse): List<String> =
-        response.quiz.filter { it.type == NamedEntity.date }.flatMap { it.questionAnswer.options }
+        response.quiz.filter { it.type == NamedEntity.date }.flatMap { it.options }
 
     init {
         "A quiz generated without configuration must only contain the default types of questions" {
@@ -56,7 +56,7 @@ class ConfigurationTest : StringSpec() {
         }
 
         "Questions on dates may have options sans years if configured as such" {
-            val options = getDateOptions(post(QuizRequest("Apple Inc.", QuizConfiguration(allowSansYears = true))))
+            val options = getDateOptions(post(QuizRequest("Apple Inc.", allowSansYears = true)))
             withClue("A large quiz will have at least one option sans a year: $options") {
                 options.map { containsYear(it) } shouldContain false
             }
@@ -64,18 +64,18 @@ class ConfigurationTest : StringSpec() {
 
         "A quiz generated with a configuration must only contain the requested types of questions" {
             val types = listOf(NamedEntity.date, NamedEntity.money)
-            val response = post(QuizRequest("Apple Inc.", QuizConfiguration(types)))
+            val response = post(QuizRequest("Apple Inc.", types = types))
             response.quiz.map { it.type }.toSet() shouldContainExactlyInAnyOrder types
         }
 
         "A quiz mustn't contain duplicate answers by default" {
-            post(QuizRequest("Apple Inc.")).quiz.map { it.questionAnswer.answer }.run {
+            post(QuizRequest("Apple Inc.")).quiz.map { it.answer }.run {
                 withClue("Questions with duplicate answers") { size shouldBe toSet().size }
             }
         }
 
         "The generator mustn't crash while generating questions for every type" {
-            post(QuizRequest("Apple Inc.", QuizConfiguration(types = NamedEntity.values().toList())))
+            post(QuizRequest("Apple Inc.", types = NamedEntity.values().toList()))
         }
     }
 }
@@ -96,7 +96,7 @@ class SizeTest : StringSpec({
 
 class ShuffledOptionsTest : StringSpec({
     "The answers present in the options should be shuffled" {
-        val questions = post(QuizRequest("Apple Inc.")).quiz.map { it.questionAnswer }
+        val questions = post(QuizRequest("Apple Inc.")).quiz
         withClue("For a large quiz, answers would be present in all the four option positions") {
             questions.map { it.options.indexOf(it.answer) }.toSet().size shouldBe 4
         }
@@ -130,13 +130,15 @@ class TopicFinderTest : StringSpec({
 class QuestionGeneratorTest : StringSpec() {
     init {
         val test = { duplicateAnswers: Boolean ->
-            val answers = generateQuestions(
-                listOf(
-                    ProcessedSentence(ProcessedContext("Bob is the CEO of KYS."), NamedEntity.person, listOf("Bob")),
-                    ProcessedSentence(ProcessedContext("Bob works at KYS."), NamedEntity.person, listOf("Bob"))
-                ),
-                QuizConfiguration(listOf(NamedEntity.person), duplicates = Duplicates(duplicateAnswers))
-            ).map { it.questionAnswer.answer }
+            val answers =
+                QuizGenerator(QuizRequest(types = listOf(NamedEntity.person), duplicateAnswers = duplicateAnswers))
+                    .generateQuestions(
+                        listOf(
+                            ProcessedSentence(ProcessedContext("Bob is KYS's CEO."), NamedEntity.person, listOf("Bob")),
+                            ProcessedSentence(ProcessedContext("Bob works at KYS."), NamedEntity.person, listOf("Bob"))
+                        )
+                    )
+                    .map { it.answer }
             withClue(answers.toString()) { answers shouldHaveSize if (duplicateAnswers) 2 else 1 }
         }
 

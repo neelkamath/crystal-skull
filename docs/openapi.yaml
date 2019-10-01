@@ -1,7 +1,7 @@
 openapi: 3.0.2
 info:
   title: Crystal Skull API
-  version: v0.1.0
+  version: v0
   description: |
     Generates an entire quiz in English with just a topic name, or even nothing at all for a random one. You can also
     generate a quiz off of text you supply.
@@ -66,9 +66,7 @@ paths:
   /quiz:
     post:
       tags: [quiz]
-      description:
-        This generates an entire quiz containing fill-in-the-blank questions for either a random topic, or the one
-        specified.
+      description: Generate a quiz containing fill-in-the-blank questions on a topic or off of the supplied text.
       operationId: generateQuiz
       requestBody:
         description: Configures how the quiz will be generated
@@ -79,11 +77,10 @@ paths:
                 summary: Generating a quiz for a topic
                 value:
                   topic: Apple Inc.
-                  configuration:
-                    types:
-                      - date
-                      - organization
-                      - person
+                  types:
+                    - date
+                    - organization
+                    - person
               text:
                 summary: Generating a quiz off of supplied text
                 value:
@@ -102,57 +99,6 @@ paths:
                     If this key is sent, don't send the `"text"` key. If both the `"topic"` and `"text"` keys aren't
                     sent, a random topic will be chosen.
                   type: string
-                configuration:
-                  type: object
-                  description: Configures the the quiz generator
-                  properties:
-                    types:
-                      description:
-                        These are the types of questions generated. The possible values are `"date"`, `"location"`,
-                        `"money"`, `"organization"`, `"percentage"`, `"person"`, and `"time"`.
-                      default: [date, location, organization, person]
-                      minItems: 1
-                      type: array
-                      items:
-                        type: string
-                    allowSansYears:
-                      description:
-                        Questions on dates may contain options lacking years (e.g., `June 7` instead of `June 7, 2000`).
-                        Since such questions may be unnecessarily difficult and/or irrelevant to a person's study,
-                        options lacking years are disallowed by default.
-                      type: boolean
-                      default: false
-                    duplicates:
-                      type: object
-                      description: Duplicates to be allowed.
-                      properties:
-                        duplicateAnswers:
-                          description:
-                            This states whether the quiz may include more than one question having the same answer. For
-                            example, one question may be `Apple Computer Company was founded by Steve Jobs.`, and
-                            another would be `Apple purchased NeXT for its NeXTSTEP operating system and to bring Steve
-                            Jobs back.`. Although both the questions are different (and would have different options),
-                            both their answers are `Steve Jobs`.
-                          type: boolean
-                          default: false
-                        duplicateSentences:
-                          default: false
-                          description:
-                            This states whether to include multiple questions from the same sentence. Take the sentence
-                            `Apple was founded by Steve Jobs in April 1976.` for example. Two questions may be generated
-                            from this, one being `Apple was founded by Steve Jobs in April 1976.` (where the answer is
-                            `Steve Jobs`), and another might be `Apple was founded by Steve Jobs in April 1976.` (where
-                            the answer is `April 1976`). Although the questions and answers (and hence, options) are
-                            different, they are based on the same sentence. This has the potential of making the quiz
-                            slightly boring, or having certain questions too easy since the user already knows the
-                            answer to the next duplicate sentence because they have read the rest of the same sentence
-                            in a previous question.
-                          type: boolean
-                max:
-                  description:
-                    The maximum number of questions to return. Quizzes may contain hundreds of questions. If you only
-                    need a certain number, specifying a maximum number to send back will reduce the download size.
-                  type: integer
                 text:
                   description: |
                     Generate a quiz off of this text. You can enhance the accuray of the generated questions by
@@ -163,6 +109,47 @@ paths:
                   type: array
                   items:
                     type: string
+                types:
+                  description:
+                    These are the types of questions generated. The possible values are `"date"`, `"location"`,
+                    `"money"`, `"organization"`, `"percentage"`, `"person"`, and `"time"`.
+                  default: [date, location, organization, person]
+                  minItems: 1
+                  type: array
+                  items:
+                    type: string
+                max:
+                  description:
+                    The maximum number of questions to return. Quizzes may contain hundreds of questions. If you only
+                    need a certain number, specifying a maximum number to send back will reduce the download size.
+                  type: integer
+                allowSansYears:
+                  description:
+                    Questions on dates may contain options lacking years (e.g., `June 7` instead of `June 7, 2000`).
+                    Since such questions may be unnecessarily difficult and/or irrelevant to a person's study, options
+                    lacking years are disallowed by default.
+                  type: boolean
+                  default: false
+                duplicateAnswers:
+                  description:
+                    This states whether the quiz may include more than one question having the same answer. For example,
+                    one question may be `Apple Computer Company was founded by Steve Jobs.`, and another would be `Apple
+                    purchased NeXT for its NeXTSTEP operating system and to bring Steve Jobs back.`. Although both the
+                    questions are different (and would have different options), both their answers are `Steve Jobs`.
+                  type: boolean
+                  default: false
+                duplicateSentences:
+                  default: false
+                  description:
+                    This states whether to include multiple questions from the same sentence. Take the sentence `Apple
+                    was founded by Steve Jobs in April 1976.` for example. Two questions may be generated from this, one
+                    being `Apple was founded by Steve Jobs in April 1976.` (where the answer is `Steve Jobs`), and
+                    another might be `Apple was founded by Steve Jobs in April 1976.` (where the answer is `April
+                    1976`). Although the questions and answers (and hence, options) are different, they are based on the
+                    same sentence. This has the potential of making the quiz slightly boring, or having certain
+                    questions too easy since the user already knows the answer to the next duplicate sentence because
+                    they have read the rest of the same sentence in a previous question.
+                  type: boolean
       responses:
         200:
           description: Generated quiz
@@ -173,13 +160,11 @@ paths:
                   summary: Quiz on a topic
                   value:
                     quiz:
-                      - questionAnswer:
-                          questionContext:
-                            question: In 1996, Spindler was replaced by Gil Amelio as CEO.
-                          options: [Steve Jobs, Gil Amelio, Steve Wozniak, Ronald Wayne]
-                          answerOffset:
-                            start: 34
-                            end: 44
+                      - question: In 1996, Spindler was replaced by Gil Amelio as CEO.
+                        options: [Steve Jobs, Gil Amelio, Steve Wozniak, Ronald Wayne]
+                        answerOffset:
+                          start: 34
+                          end: 44
                         type: person
                     metadata:
                       topic: Apple Inc.
@@ -189,20 +174,18 @@ paths:
                   summary: Quiz for supplied text
                   value:
                     quiz:
-                      - questionAnswer:
-                          questionContext:
-                            question: Microsoft launched its first retail version of Windows in 1985.
-                            context: The trade name "Microsoft" was registered on November 26, 1976.
-                          options:
-                            - June 12, 1956
-                            - November 26, 1976
-                            - 1985, September 27
-                            - '1967'
-                          answerOffset:
-                            start: 58
-                            end: 62
+                      - question: Microsoft launched its first retail version of Windows in 1985.
+                        context: The trade name "Microsoft" was registered on November 26, 1976.
+                        options:
+                          - June 12, 1956
+                          - November 26, 1976
+                          - 1985, September 27
+                          - '1967'
+                        answerOffset:
+                          start: 58
+                          end: 62
                         type: date
-                    related: [Bill Gates, Seattle]
+                    related: [Microsoft]
               schema:
                 type: object
                 properties:
@@ -211,50 +194,40 @@ paths:
                     items:
                       type: object
                       properties:
-                        questionAnswer:
-                          description: A multiple choice question containing four choices and one correct answer
+                        question:
+                          type: string
+                        context:
+                          description:
+                            Occasionally, the question is insufficient for the user to understand what is being asked.
+                            For example, the question `This slump caused the company to collapse in 1997.` is impossible
+                            to understand. For this reason, this field will contain the sentence present prior to the
+                            question. If the question is the first sentence in its passage, then this field will be
+                            `null` (a context isn't required in such cases anyway).
+                          type: string
+                          nullable: true
+                        options:
+                          description: Possible answers
+                          type: array
+                          items:
+                            type: string
+                          minItems: 4
+                          maxItems: 4
+                        answerOffset:
+                          description: The character offsets of the correct option
                           type: object
                           properties:
-                            questionContext:
-                              type: object
-                              properties:
-                                question:
-                                  type: string
-                                context:
-                                  description:
-                                    Occasionally, the question is insufficient for the user to understand what is being
-                                    asked. For example, the question `This slump caused the company to collapse in
-                                    1997.` is impossible to understand. For this reason, this field will contain the
-                                    sentence present prior to the question. If the question is the first sentence in its
-                                    passage, then this field will be `null` (a context isn't required in such cases
-                                    anyway).
-                                  type: string
-                                  nullable: true
-                              required: [question]
-                            options:
-                              description: Possible answers
-                              type: array
-                              items:
-                                type: string
-                              minItems: 4
-                              maxItems: 4
-                            answerOffset:
-                              description: The character offsets of the correct option
-                              type: object
-                              properties:
-                                start:
-                                  type: integer
-                                  description: Starting offset
-                                end:
-                                  type: integer
-                                  description: Ending offset
-                              required: [start, end]
-                          required: [questionContext, answerOffset, options]
+                            start:
+                              type: integer
+                              description: Starting offset
+                            end:
+                              type: integer
+                              description: Ending offset
+                          required: [start, end]
                         type:
                           description: Type of question
                           type: string
                           enum: [date, location, money, organization, percentage, person, time]
-                      required: [questionAnswer, type]
+                      required: [question, answerOffset, options, type]
                   metadata:
                     description: This will be present if the quiz was generated for a topic, but not for supplied text.
                     type: object
@@ -279,7 +252,7 @@ paths:
   /health_check:
     get:
       tags: [status]
-      description: Checks if all systems are operational
+      description: Check if all systems are operational
       operationId: healthCheck
       responses:
         204:
