@@ -42,7 +42,7 @@ if (gradle.startParameter.taskNames.contains("githubRelease")) {
         owner("neelkamath")
         body("Download and open the release asset, `redoc-static.html`, in your browser to view the HTTP API documentation.")
         overwrite(true)
-        prerelease(project.version.toString().startsWith("0"))
+        prerelease(project.version == 0)
         releaseAssets("redoc-static.html")
     }
 }

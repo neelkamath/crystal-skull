@@ -24,18 +24,28 @@ internal fun createQuestions(
         sentences.associateWith { processed ->
             processed.names
                 .filter { if (processed.entity == NamedEntity.date && !allowSansYears) containsYear(it) else true }
-                .map { answer ->
-                    val correctOption = CorrectOption(namedOptions.getValue(processed.entity), answer)
-                    QuizQuestion(
-                        processed.context.sentence,
-                        getOptions(correctOption, processed.entity, allowSansYears),
-                        processed.context.sentence.indexOf(answer).let { AnswerOffset(it, it + answer.length) },
-                        processed.entity,
-                        processed.context.previous
-                    )
-                }
+                .map { question(processed, CorrectOption(namedOptions.getValue(processed.entity), it), allowSansYears) }
         }
     }
+
+/**
+ * Creates a [QuizQuestion] out of the [sentence] and [correctOption].
+ *
+ * Options lacking years may be included if you [allowSansYears].
+ */
+private fun question(
+    sentence: ProcessedSentence,
+    correctOption: CorrectOption,
+    allowSansYears: Boolean = false
+): QuizQuestion = with(sentence) {
+    QuizQuestion(
+        context.sentence,
+        getOptions(correctOption, entity, allowSansYears),
+        context.sentence.indexOf(correctOption.answer).let { AnswerOffset(it, it + correctOption.answer.length) },
+        entity,
+        context.previous
+    )
+}
 
 /**
  * Gives four options from the [correctOption].
@@ -48,15 +58,14 @@ private fun getOptions(
     correctOption: CorrectOption,
     entity: NamedEntity,
     allowSansYears: Boolean = false
-): Set<String> =
-    (correctOption.options.shuffled().take(3) + correctOption.answer).let { options ->
-        var set = filterOptions(correctOption.copy(options = options.toSet()), entity, allowSansYears).toMutableSet()
-        while (set.size < 4) {
-            set.add(getRandomEntity(entity))
-            set = filterOptions(correctOption.copy(options = set), entity, allowSansYears).toMutableSet()
-        }
-        set
-    }.shuffled().toSet()
+): Set<String> = (correctOption.options.shuffled().take(3) + correctOption.answer).let { options ->
+    var set = filterOptions(correctOption.copy(options = options.toSet()), entity, allowSansYears).toMutableSet()
+    while (set.size < 4) {
+        set.add(getRandomEntity(entity))
+        set = filterOptions(correctOption.copy(options = set), entity, allowSansYears).toMutableSet()
+    }
+    set
+}.shuffled().toSet()
 
 /** One or more [options], of which one is the correct [answer]. */
 private data class CorrectOption(val options: Set<String>, val answer: String) {
