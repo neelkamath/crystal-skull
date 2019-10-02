@@ -123,6 +123,7 @@ paths:
                     The maximum number of questions to return. Quizzes may contain hundreds of questions. If you only
                     need a certain number, specifying a maximum number to send back will reduce the download size.
                   type: integer
+                  minimum: 0
                 allowSansYears:
                   description:
                     Questions on dates may contain options lacking years (e.g., `June 7` instead of `June 7, 2000`).

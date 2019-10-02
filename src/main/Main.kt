@@ -43,11 +43,16 @@ internal class QuizGenerator(private val request: QuizRequest) {
     internal suspend fun quizTopic(): QuizResponse {
         val topic = request.topic ?: search()[0].title
         val page = getPage(topic)
-        val sentences = page
-            .filterKeys { it !in listOf("See also", "References", "Further reading", "External links") }
-            .map { processSection(it.value) }
         return QuizResponse(
-            assembleQuestions(sentences),
+            if (request.max != null && request.max == 0) {
+                listOf()
+            } else {
+                generateQuestions(
+                    page
+                        .filterKeys { it !in listOf("See also", "References", "Further reading", "External links") }
+                        .map { processSection(it.value) }
+                )
+            },
             QuizMetadata(topic, getUrl(topic)),
             page["See also"]?.split("\n")
         )
@@ -55,8 +60,12 @@ internal class QuizGenerator(private val request: QuizRequest) {
 
     /** Creates a [QuizResponse] for a non-null [QuizRequest.text]. */
     internal suspend fun quizText(): QuizResponse = QuizResponse(
-        assembleQuestions(request.text!!.map { processSection(it) }),
-        related = findRelatedTopics(request.text)
+        if (request.max != null && request.max == 0) {
+            listOf()
+        } else {
+            generateQuestions(request.text!!.map { processSection(it) })
+        },
+        related = findRelatedTopics(request.text!!)
     )
 
     /** Processes a [section] of text (e.g., the early life of Bill Gates). */
@@ -70,9 +79,6 @@ internal class QuizGenerator(private val request: QuizRequest) {
             }
         }
 
-    private fun assembleQuestions(sections: List<ProcessedSection>): List<QuizQuestion> =
-        generateQuestions(sections).let { if (request.max == null) it else it.take(request.max) }
-
     internal fun generateQuestions(sections: List<ProcessedSection>): List<QuizQuestion> =
         Quizmaster(request.allowSansYears)
             .quiz(sections, request.types)
@@ -83,6 +89,7 @@ internal class QuizGenerator(private val request: QuizRequest) {
                 list.apply { if (request.duplicateAnswers || isUniqueAnswer) add(question) }
             }
             .shuffled()
+            .let { if (request.max == null) it else it.take(request.max) }
 }
 
 /** Finds topics related to [sections] on Wikipedia (ordered with the most relevant first). */

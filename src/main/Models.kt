@@ -41,6 +41,7 @@ internal data class QuizRequest(
 ) {
     init {
         if (topic != null && text != null) throw Error(invalidMessage)
+        if (max != null && max < 0) throw Error("<max> cannot be negative")
     }
 
     companion object {
