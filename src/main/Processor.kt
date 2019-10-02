@@ -12,6 +12,9 @@ import java.io.FileInputStream
 /** A document useful for enhancing the accuracy of a [NameFinderME]. */
 internal typealias Document = List<TokenizedSentence>
 
+/** A section of text (e.g., the early life of Bill Gates). */
+internal typealias ProcessedSection = List<ProcessedSentence>
+
 /** [tokens] are the original [sentence]'s tokens. */
 internal data class TokenizedSentence(val sentence: String, val tokens: List<String>)
 
@@ -51,12 +54,29 @@ object NameFinder {
         val list = mutableListOf<ProcessedSentence>()
         val finder = nameFinders.getValue(entity).value
         for (document in documents) {
-            for ((index, sentence) in document.withIndex()) {
-                finder.find(sentence.tokens.toTypedArray()).filter { it.prob >= .9 }.takeIf { it.isNotEmpty() }?.let {
-                    list.add(process(it, sentence, document.elementAtOrNull(index - 1)?.sentence))
-                }
-            }
+            list.addAll(findNames(document, entity, finder))
             finder.clearAdaptiveData()
+        }
+        return list
+    }
+
+    /**
+     * Finds [entity]s in an English [document] (sentences without [entity]s will be discarded).
+     *
+     * If you are finding names in [Document]s, you can supply your own [finder]. This way you can enhance the results
+     * by calling [NameFinderME.clearAdaptiveData] after each finding.
+     */
+    @Synchronized
+    internal fun findNames(
+        document: Document,
+        entity: NamedEntity,
+        finder: NameFinderME = nameFinders.getValue(entity).value
+    ): List<ProcessedSentence> {
+        val list = mutableListOf<ProcessedSentence>()
+        for ((index, sentence) in document.withIndex()) {
+            finder.find(sentence.tokens.toTypedArray()).filter { it.prob >= .9 }.takeIf { it.isNotEmpty() }?.let {
+                list.add(process(it, sentence, document.elementAtOrNull(index - 1)?.sentence))
+            }
         }
         return list
     }
