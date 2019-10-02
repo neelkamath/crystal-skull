@@ -43,26 +43,25 @@ internal class QuizGenerator(private val request: QuizRequest) {
     internal suspend fun quizTopic(): QuizResponse {
         val topic = request.topic ?: search()[0].title
         val page = getPage(topic)
-        val documents = page
+        val sentences = page
             .filterKeys { it !in listOf("See also", "References", "Further reading", "External links") }
-            .values
-        val processedSentences = processSentences(documents.toList())
+            .map { processSection(it.value) }
         return QuizResponse(
-            assembleQuestions(processedSentences),
+            assembleQuestions(sentences),
             QuizMetadata(topic, getUrl(topic)),
             page["See also"]?.split("\n")
         )
     }
 
     /** Creates a [QuizResponse] for a non-null [QuizRequest.text]. */
-    internal suspend fun quizText(): QuizResponse =
-        QuizResponse(assembleQuestions(processSentences(request.text!!)), related = findRelatedTopics(request.text))
+    internal suspend fun quizText(): QuizResponse = QuizResponse(
+        assembleQuestions(request.text!!.map { processSection(it) }),
+        related = findRelatedTopics(request.text)
+    )
 
-    /** Creates [ProcessedSentence]s from [sections] of text (e.g., a section on the early life of Bill Gates). */
-    private fun processSentences(sections: List<String>): List<ProcessedSentence> = request.types
-        .flatMap { entity ->
-            findNames(sections.map { tokenize(it) }, entity)
-        }
+    /** Processes a [section] of text (e.g., the early life of Bill Gates). */
+    private fun processSection(section: String): List<ProcessedSentence> = request.types
+        .flatMap { entity -> findNames(tokenize(section), entity) }
         .let { sentences ->
             if (request.duplicateSentences) return@let sentences
             sentences.fold(mutableListOf()) { list, processed ->
@@ -71,11 +70,12 @@ internal class QuizGenerator(private val request: QuizRequest) {
             }
         }
 
-    private fun assembleQuestions(sentences: List<ProcessedSentence>): List<QuizQuestion> =
-        generateQuestions(sentences).let { if (request.max == null) it else it.take(request.max) }
+    private fun assembleQuestions(sections: List<ProcessedSection>): List<QuizQuestion> =
+        generateQuestions(sections).let { if (request.max == null) it else it.take(request.max) }
 
-    internal fun generateQuestions(sentences: List<ProcessedSentence>): List<QuizQuestion> =
-        createQuestions(sentences, request.types, request.allowSansYears)
+    internal fun generateQuestions(sections: List<ProcessedSection>): List<QuizQuestion> =
+        Quizmaster(request.allowSansYears)
+            .quiz(sections, request.types)
             .filterValues { it.isNotEmpty() }
             .flatMap { if (request.duplicateSentences) it.value else listOf(it.value.random()) }
             .fold(mutableListOf<QuizQuestion>()) { list, question ->

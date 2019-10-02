@@ -3,10 +3,26 @@ package com.neelkamath.crystalskull.test
 import com.neelkamath.crystalskull.*
 import io.kotlintest.matchers.boolean.shouldBeFalse
 import io.kotlintest.matchers.boolean.shouldBeTrue
+import io.kotlintest.matchers.collections.shouldContainAll
 import io.kotlintest.matchers.string.shouldMatch
 import io.kotlintest.matchers.withClue
 import io.kotlintest.shouldBe
 import io.kotlintest.specs.StringSpec
+
+class RelevantOptionTest : StringSpec({
+    "Options must only be taken from the section the question is from unless more are required" {
+        val relevantOptions = setOf("Apple", "Google", "Microsoft")
+        Quizmaster()
+            .getOptions(
+                NamedEntity.person,
+                Quizmaster.CorrectOption(
+                    relevantOptions,
+                    options = setOf("IBM", "Mozilla", "Nintendo", "SEGA"),
+                    answer = "Google"
+                )
+            ) shouldContainAll relevantOptions
+    }
+})
 
 class DuplicatesRemoverTest : StringSpec() {
     init {

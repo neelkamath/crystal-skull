@@ -134,8 +134,14 @@ class QuestionGeneratorTest : StringSpec() {
                 QuizGenerator(QuizRequest(types = listOf(NamedEntity.person), duplicateAnswers = duplicateAnswers))
                     .generateQuestions(
                         listOf(
-                            ProcessedSentence(ProcessedContext("Bob is KYS's CEO."), NamedEntity.person, listOf("Bob")),
-                            ProcessedSentence(ProcessedContext("Bob works at KYS."), NamedEntity.person, listOf("Bob"))
+                            listOf(
+                                ProcessedSentence(
+                                    ProcessedContext("Bob is KYS's CEO."), NamedEntity.person, listOf("Bob")
+                                ),
+                                ProcessedSentence(
+                                    ProcessedContext("Bob works at KYS."), NamedEntity.person, listOf("Bob")
+                                )
+                            )
                         )
                     )
                     .map { it.answer }
