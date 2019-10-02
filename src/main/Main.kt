@@ -75,7 +75,7 @@ internal class QuizGenerator(private val request: QuizRequest) {
         generateQuestions(sentences).let { if (request.max == null) it else it.take(request.max) }
 
     internal fun generateQuestions(sentences: List<ProcessedSentence>): List<QuizQuestion> =
-        createQuestions(sentences, request.types, request.allowSansYears)
+        Quizmaster(request.allowSansYears).quiz(sentences, request.types)
             .filterValues { it.isNotEmpty() }
             .flatMap { if (request.duplicateSentences) it.value else listOf(it.value.random()) }
             .fold(mutableListOf<QuizQuestion>()) { list, question ->

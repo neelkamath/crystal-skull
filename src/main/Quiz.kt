@@ -5,92 +5,71 @@ import java.time.Month
 import java.time.format.TextStyle
 import java.util.*
 
-/**
- * Maps [sentences] to the [QuizQuestion]s generated (using [entities]) from them.
- *
- * Questions on dates may contain options lacking years (e.g., `June 7` instead of `June 7, 2000`). Since such questions
- * may be unnecessarily difficult and/or irrelevant to a person's study, options lacking years will be disallowed by
- * default.
- */
-internal fun createQuestions(
-    sentences: List<ProcessedSentence>,
-    entities: List<NamedEntity>,
-    allowSansYears: Boolean = false
-): Map<ProcessedSentence, List<QuizQuestion>> = entities
-    .associateWith { entity ->
-        sentences.filter { it.entity == entity }.flatMap { it.names }.toSet()
-    }
-    .let { namedOptions ->
-        sentences.associateWith { processed ->
-            processed.names
-                .filter { if (processed.entity == NamedEntity.date && !allowSansYears) containsYear(it) else true }
-                .map { question(processed, CorrectOption(namedOptions.getValue(processed.entity), it), allowSansYears) }
+/** Options lacking years may be included if you [allowSansYears]. */
+internal class Quizmaster(private val allowSansYears: Boolean = false) {
+    /** One or more [options], of which one is the correct [answer]. */
+    private data class CorrectOption(val options: Set<String>, val answer: String) {
+        init {
+            if (answer !in options) throw Error("<answer> must be in <options>: $this")
         }
     }
 
-/**
- * Creates a [QuizQuestion] out of the [sentence] and [correctOption].
- *
- * Options lacking years may be included if you [allowSansYears].
- */
-private fun question(
-    sentence: ProcessedSentence,
-    correctOption: CorrectOption,
-    allowSansYears: Boolean = false
-): QuizQuestion = with(sentence) {
-    QuizQuestion(
-        context.sentence,
-        getOptions(correctOption, entity, allowSansYears),
-        context.sentence.indexOf(correctOption.answer).let { AnswerOffset(it, it + correctOption.answer.length) },
-        entity,
-        context.previous
-    )
-}
+    /** Creates [QuizQuestion]s out of [sentences] using [entities]. */
+    internal fun quiz(
+        sentences: List<ProcessedSentence>,
+        entities: List<NamedEntity>
+    ): Map<ProcessedSentence, List<QuizQuestion>> = entities
+        .associateWith { entity ->
+            sentences.filter { it.entity == entity }.flatMap { it.names }.toSet()
+        }
+        .let { namedOptions ->
+            sentences.associateWith { processed ->
+                processed.names
+                    .filter { if (processed.entity == NamedEntity.date && !allowSansYears) containsYear(it) else true }
+                    .map { Master(CorrectOption(namedOptions.getValue(processed.entity), it)).question(processed) }
+            }
+        }
 
-/**
- * Gives four options from the [correctOption].
- *
- * If there aren't enough [CorrectOption.options], fake [entity]s will be generated.
- *
- * [NamedEntity.date] options lacking years may be included if you [allowSansYears].
- */
-private fun getOptions(
-    correctOption: CorrectOption,
-    entity: NamedEntity,
-    allowSansYears: Boolean = false
-): Set<String> = (correctOption.options.shuffled().take(3) + correctOption.answer).let { options ->
-    var set = filterOptions(correctOption.copy(options = options.toSet()), entity, allowSansYears).toMutableSet()
-    while (set.size < 4) {
-        set.add(getRandomEntity(entity))
-        set = filterOptions(correctOption.copy(options = set), entity, allowSansYears).toMutableSet()
-    }
-    set
-}.shuffled().toSet()
+    /** If there aren't enough [CorrectOption.options], fake options will be generated. */
+    private inner class Master(private val correctOption: CorrectOption) {
+        internal fun question(processedSentence: ProcessedSentence): QuizQuestion = with(processedSentence) {
+            QuizQuestion(
+                context.sentence,
+                getOptions(entity),
+                context.sentence.indexOf(correctOption.answer).let {
+                    AnswerOffset(it, it + correctOption.answer.length)
+                },
+                entity,
+                context.previous
+            )
+        }
 
-/** One or more [options], of which one is the correct [answer]. */
-private data class CorrectOption(val options: Set<String>, val answer: String) {
-    init {
-        if (answer !in options) throw Error("<answer> must be in <options>: $this")
-    }
-}
+        /** Gives four options from the [correctOption]. [entity] options will be generated if required. */
+        private fun getOptions(entity: NamedEntity): Set<String> =
+            (correctOption.options.shuffled().take(3) + correctOption.answer).let {
+                var set = filterOptions(entity).toMutableSet()
+                while (set.size < 4) {
+                    set.add(getRandomEntity(entity))
+                    set = filterOptions(entity).toMutableSet()
+                }
+                set
+            }.shuffled().toSet()
 
-/**
- * Removes duplicate options from the [correctOption].
- *
- * If [entity] is a [NamedEntity.date], options sans years will be removed if you don't [allowSansYears] (e.g.,
- * `June 7` is an option sans a year, but `June 7, 2000` isn't).
- */
-private fun filterOptions(
-    correctOption: CorrectOption,
-    entity: NamedEntity,
-    allowSansYears: Boolean = false
-): Set<String> {
-    var set = correctOption.options.toMutableSet()
-    if (entity in listOf(NamedEntity.location, NamedEntity.organization, NamedEntity.person)) {
-        set = removeDuplicates(set, correctOption.answer).toMutableSet()
+        /**
+         * Removes duplicate options from the [correctOption].
+         *
+         * If [entity] is a [NamedEntity.date], options sans years will be removed if you don't [allowSansYears] (e.g.,
+         * `June 7` is an option sans a year, but `June 7, 2000` isn't).
+         */
+        private fun filterOptions(entity: NamedEntity): Set<String> {
+            var set = correctOption.options.toMutableSet()
+            if (entity in listOf(NamedEntity.location, NamedEntity.organization, NamedEntity.person)) {
+                set = removeDuplicates(set, correctOption.answer).toMutableSet()
+            }
+            if (entity != NamedEntity.date) return set
+            return if (allowSansYears) set else set.filter { containsYear(it) }.toSet()
+        }
     }
-    if (entity != NamedEntity.date) return set
-    return if (allowSansYears) set else set.filter { containsYear(it) }.toSet()
 }
 
 /**
@@ -114,7 +93,7 @@ internal fun removeDuplicates(strings: Set<String>, sought: String): Set<String>
 /** Whether [string] contains a year (a four-digit number). */
 internal fun containsYear(string: String) = string.contains(Regex("""\d\d\d\d"""))
 
-/** Generates a fake name for an [entity]. */
+/** Generates a fake [entity]. */
 internal fun getRandomEntity(entity: NamedEntity): String = with(Faker()) {
     when (entity) {
         NamedEntity.date -> {
@@ -133,7 +112,7 @@ internal fun getRandomEntity(entity: NamedEntity): String = with(Faker()) {
     }
 }
 
-/** Returns a random 12 hour formatted time (e.g., `"03:47 PM"`). */
+/** Random 12 hour formatted time (e.g., `"03:47 PM"`). */
 internal fun getRandomTime(): String = with(Calendar.getInstance().apply { time = Faker().date().birthday() }) {
     val format = { value: Int -> "${if (value < 10) "0" else ""}$value" }
     "${(format(get(Calendar.HOUR) + 1))}:${format(get(Calendar.MINUTE))} ${listOf("AM", "PM").random()}"
