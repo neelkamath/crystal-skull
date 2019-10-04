@@ -3,9 +3,11 @@ package com.neelkamath.crystalskull
 import com.neelkamath.crystalskull.NameFinder.findNames
 import com.neelkamath.crystalskull.Tokenizer.tokenize
 import com.neelkamath.kwikipedia.getPage
-import com.neelkamath.kwikipedia.getUrl
 import com.neelkamath.kwikipedia.search
+import com.neelkamath.kwikipedia.searchMostViewed
+import com.neelkamath.kwikipedia.searchTitle
 import io.ktor.application.Application
+import io.ktor.application.ApplicationCall
 import io.ktor.application.call
 import io.ktor.application.install
 import io.ktor.features.CallLogging
@@ -17,31 +19,39 @@ import io.ktor.response.respond
 import io.ktor.routing.Routing
 import io.ktor.routing.get
 import io.ktor.routing.post
+import io.ktor.util.pipeline.PipelineContext
 
 fun Application.main() {
     install(CallLogging)
     install(ContentNegotiation) { gson() }
     install(Routing) {
         get("search") {
-            val results = search(call.request.queryParameters["query"]!!).toList()
+            val results = search(call.request.queryParameters["query"]!!)
             call.respond(SearchResponse(results.map { Topic(it.title, it.description) }))
         }
-        post("quiz") {
-            val request = call.receive<QuizRequest>()
-            if (request.topic != null && request.text != null) {
-                call.respond(HttpStatusCode.BadRequest, QuizRequest.invalidMessage)
-            } else {
-                with(QuizGenerator(request)) { call.respond(if (request.text != null) quizText() else quizTopic()) }
-            }
+        get("search_trending") {
+            val results = searchMostViewed(call.request.queryParameters["max"]?.toInt() ?: 5)
+            call.respond(SearchResponse(results.map { Topic(it.title, it.description) }))
         }
+        post("quiz") { quiz(this) }
         get("health_check") { call.respond(HttpStatusCode.NoContent) }
+    }
+}
+
+/** Deals with HTTP POST requests to the `/quiz` endpoint. */
+private suspend fun quiz(context: PipelineContext<Unit, ApplicationCall>) = with(context) {
+    val request = call.receive<QuizRequest>()
+    if (request.topic != null && request.text != null) {
+        call.respond(HttpStatusCode.BadRequest, QuizRequest.invalidMessage)
+    } else {
+        with(QuizGenerator(request)) { call.respond(if (request.text != null) quizText() else quizTopic()) }
     }
 }
 
 internal class QuizGenerator(private val request: QuizRequest) {
     /** Creates a quiz for a [QuizRequest.topic] (if `null`, a random topic will be chosen. */
     internal suspend fun quizTopic(): QuizResponse {
-        val topic = request.topic ?: search()[0].title
+        val topic = request.topic ?: searchMostViewed().random().title
         val page = getPage(topic)
         return QuizResponse(
             if (request.max != null && request.max == 0) {
@@ -53,7 +63,7 @@ internal class QuizGenerator(private val request: QuizRequest) {
                         .map { processSection(it.value) }
                 )
             },
-            QuizMetadata(topic, getUrl(topic)),
+            QuizMetadata(topic, searchTitle(topic).url),
             page["See also"]?.split("\n")
         )
     }

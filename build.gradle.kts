@@ -17,7 +17,7 @@ dependencies {
     implementation("io.ktor:ktor-server-netty:$ktorVersion")
     implementation("io.ktor:ktor-gson:$ktorVersion")
     implementation("ch.qos.logback:logback-classic:1.2.3")
-    implementation("com.neelkamath.kwikipedia:kwikipedia:0.5.0")
+    implementation("com.neelkamath.kwikipedia:kwikipedia:0.6.1")
     implementation("org.apache.opennlp:opennlp-tools:1.9.1")
     implementation("com.github.javafaker:javafaker:1.0.0")
     implementation(kotlin("stdlib-jdk8"))

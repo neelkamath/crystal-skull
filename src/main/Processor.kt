@@ -103,6 +103,7 @@ object NameFinder {
         .replace(" '", "'")
         .replace(" , ", ", ")
         .replace(" %", "%")
+        .replace("( ", "(")
         .let { if (span.type == "money" && isSymbol(it)) it.replaceFirst(" ", "") else it }
 
     private fun isSymbol(string: String) = with(string.split(" ")[0]) { length == 1 && !matches(Regex("""^(\w|\d)""")) }

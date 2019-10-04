@@ -54,4 +54,9 @@ The mock server will be running at `http://localhost:4010`.
 
 ## Releases
 
-Bump the HTTP API version in `docs/openapi.yaml` and `build.gradle.kts`, and commit to the `master` branch. If the tests pass, a git tag and GitHub release will automatically be created.
+- If required, bump the HTTP API version in `docs/openapi.yaml` and `build.gradle.kts`.
+- For every commit to the `master` branch in which the tests have passed, the following will automatically be done.
+    - If there is a new HTTP API version, a git tag and GitHub release will be created.
+    - The new images will be uploaded to Docker Hub.
+    - The Heroku deployment will be updated.
+    - The new documentation will be hosted.

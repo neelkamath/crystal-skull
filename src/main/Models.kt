@@ -85,7 +85,7 @@ internal data class QuizQuestion(
     val type: NamedEntity,
     val context: String? = null
 ) {
-    val answer get() = question.slice(answerOffset.start until answerOffset.end)
+    val answer = question.slice(answerOffset.start until answerOffset.end)
 
     init {
         if (options.size != 4) throw Error("<options> must have a size of four: $this")

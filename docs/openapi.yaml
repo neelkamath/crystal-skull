@@ -63,6 +63,51 @@ paths:
                           type: string
                       required: [topic, description]
                 required: [topics]
+  /search_trending:
+    get:
+      tags: [search]
+      description: Searches for topics trending in the last day to generate a quiz on
+      operationId: searchTrendingTopics
+      parameters:
+        - name: max
+          in: query
+          description: Maximum number of topics to retrieve
+          schema:
+            type: number
+            default: 5
+            example: 3
+      responses:
+        200:
+          description: Topic names and descriptions
+          content:
+            application/json:
+              schema:
+                example:
+                  topics:
+                    - topic: Joker (2019 film)
+                      description:
+                        Joker is a 2019 American psychological thriller film directed by Todd Phillips, who co-wrote the
+                        screenplay with Scott Silver.
+                    - topic: List of most popular websites
+                      description:
+                        This is a list of the most popular websites worldwide according to the first 50 websites listed
+                        in the global "Top Sites" lists published by Alexa Internet, as of August 23, 2019, and
+                        SimilarWeb, as of July 2019, along with its rating on the corresponding service.
+                type: object
+                properties:
+                  topics:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        topic:
+                          description: Topic name
+                          type: string
+                        description:
+                          description: Topic description
+                          type: string
+                      required: [topic, description]
+                required: [topics]
   /quiz:
     post:
       tags: [quiz]
@@ -97,7 +142,7 @@ paths:
                     `/search` endpoint.
 
                     If this key is sent, don't send the `"text"` key. If both the `"topic"` and `"text"` keys aren't
-                    sent, a random topic will be chosen.
+                    sent, a random topic will be chosen. The random topic will be a popular topic from the previous day.
                   type: string
                 text:
                   description: |
