@@ -49,7 +49,7 @@ private suspend fun quiz(context: PipelineContext<Unit, ApplicationCall>) = with
 }
 
 internal class QuizGenerator(private val request: QuizRequest) {
-    /** Creates a quiz for a [QuizRequest.topic] (if `null`, a random topic will be chosen. */
+    /** Creates a quiz for a [QuizRequest.topic] (if `null`, a random topic will be chosen). */
     internal suspend fun quizTopic(): QuizResponse {
         val topic = request.topic ?: searchMostViewed().random().title
         val page = getPage(topic)
@@ -79,8 +79,9 @@ internal class QuizGenerator(private val request: QuizRequest) {
     )
 
     /** Processes a [section] of text (e.g., the early life of Bill Gates). */
-    private fun processSection(section: String): List<ProcessedSentence> = request.types
-        .flatMap { entity -> findNames(tokenize(section), entity) }
+    private fun processSection(section: String): List<ProcessedSentence> = request
+        .types
+        .flatMap { findNames(tokenize(section), it) }
         .let { sentences ->
             if (request.duplicateSentences) return@let sentences
             sentences.fold(mutableListOf()) { list, processed ->

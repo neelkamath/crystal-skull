@@ -9,12 +9,12 @@ variables:
   # See https://github.com/docker-library/docker/pull/166
   DOCKER_TLS_CERTDIR: ""
 
-stages: [test, build, push, deploy]
+stages: [test, version, build, push, deploy]
 
 test-server:
   stage: test
   image: openjdk:8
-  script: ./gradlew test
+  script: ./gradlew test --no-daemon
   artifacts:
     paths: [build/reports/tests/test/]
 
@@ -25,18 +25,23 @@ test-spec:
     - npm i -g @stoplight/spectral
     - spectral lint docs/openapi.yaml
 
+save-version:
+  stage: version
+  script:
+    - version=$(./gradlew properties --no-daemon | grep version -m 1)
+    - 'echo v${version#*: } > version.txt'
+  artifacts:
+    paths: [version.txt]
+  only: [master]
+
 build-image:
   stage: build
   image: docker:dind
   script:
     - echo $CI_REGISTRY_PASSWORD | docker login -u $CI_REGISTRY_USER --password-stdin $CI_REGISTRY
-    - export version=$(grep version docs/openapi.yaml -m 1)
-    - 'echo v${version#*: } > version.txt'
     - docker build -t $CI_REGISTRY_IMAGE -t $CI_REGISTRY_IMAGE:$(cat version.txt) .
     - docker push $CI_REGISTRY_IMAGE
     - docker push $CI_REGISTRY_IMAGE:$(cat version.txt)
-  artifacts:
-    paths: [version.txt]
   only: [master]
 
 build-docs:
@@ -89,7 +94,7 @@ heroku-release:
 github-release:
   stage: deploy
   image: openjdk:8
-  script: ./gradlew githubRelease -PGITHUB_TOKEN=$GITHUB_TOKEN
+  script: ./gradlew githubRelease -PGITHUB_TOKEN=$GITHUB_TOKEN --no-daemon
   only: [master]
 
 pages:

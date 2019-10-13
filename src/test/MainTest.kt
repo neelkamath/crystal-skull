@@ -19,7 +19,7 @@ import io.ktor.server.testing.setBody
 import io.ktor.server.testing.withTestApplication
 
 class SearchTest : StringSpec({
-    """Searching for "appl" must include the fruit and tech company as results""" {
+    """Searching for "appl" should include the fruit and tech company as results""" {
         withTestApplication(Application::main) {
             val response = handleRequest(HttpMethod.Get, "search?query=appl").response
             val search = Gson().fromJson(response.content, SearchResponse::class.java).topics.map { it.topic }
@@ -29,11 +29,11 @@ class SearchTest : StringSpec({
 })
 
 class MetadataTest : StringSpec({
-    "Generating a quiz for a particular topic must return a quiz for the same topic" {
+    "Generating a quiz for a particular topic should return a quiz for the same topic" {
         "Apple".let { post(QuizRequest(it)).metadata!!.topic shouldBe it }
     }
 
-    "Generating a quiz for a particular topic must return the correct source page's URL" {
+    "Generating a quiz for a particular topic should return the correct source page's URL" {
         post(QuizRequest("John Mayer Trio")).metadata!!.url shouldBe "https://en.wikipedia.org/wiki/John_Mayer_Trio"
     }
 })
@@ -44,12 +44,12 @@ class ConfigurationTest : StringSpec() {
         response.quiz.filter { it.type == NamedEntity.date }.flatMap { it.options }
 
     init {
-        "A quiz generated without configuration must only contain the default types of questions" {
+        "A quiz generated without configuration should only contain the default types of questions" {
             val types = listOf(NamedEntity.date, NamedEntity.location, NamedEntity.organization, NamedEntity.person)
             post(QuizRequest("Apple Inc.")).quiz.map { it.type }.toSet() shouldContainExactlyInAnyOrder types
         }
 
-        "Questions on dates mustn't have options sans years by default" {
+        "Questions on dates shouldn't have options sans years by default" {
             for (option in getDateOptions(post(QuizRequest("Apple Inc.")))) {
                 withClue(option) { containsYear(option).shouldBeTrue() }
             }
@@ -62,19 +62,19 @@ class ConfigurationTest : StringSpec() {
             }
         }
 
-        "A quiz generated with a configuration must only contain the requested types of questions" {
+        "A quiz generated with a configuration should only contain the requested types of questions" {
             val types = listOf(NamedEntity.date, NamedEntity.money)
             val response = post(QuizRequest("Apple Inc.", types = types))
             response.quiz.map { it.type }.toSet() shouldContainExactlyInAnyOrder types
         }
 
-        "A quiz mustn't contain duplicate answers by default" {
+        "A quiz shouldn't contain duplicate answers by default" {
             post(QuizRequest("Apple Inc.")).quiz.map { it.answer }.run {
                 withClue("Questions with duplicate answers") { size shouldBe toSet().size }
             }
         }
 
-        "The generator mustn't crash while generating questions for every type" {
+        "The generator shouldn't crash while generating questions for every type" {
             post(QuizRequest("Apple Inc.", types = NamedEntity.values().toList()))
         }
     }
@@ -89,7 +89,7 @@ class RelatedQuizTest : StringSpec({
 })
 
 class SizeTest : StringSpec({
-    "The quiz mustn't contain more questions than what was asked for" {
+    "The quiz shouldn't contain more questions than what was asked for" {
         3.let { post(QuizRequest("Apple Inc.", max = it)).quiz.size shouldBe it }
     }
 })
@@ -104,7 +104,7 @@ class ShuffledOptionsTest : StringSpec({
 })
 
 class TextSupplierTest : StringSpec({
-    "Quizzes must generate using the supplied text" {
+    "Quizzes should generate using the supplied text" {
         val text = listOf("Bob attended Harvard Business School.", "Bob married Nancy Drew in August 1976.")
         val quiz = post(QuizRequest(text = text)).quiz
         withClue("Request: $text\nResponse: $quiz") { quiz shouldHaveSize 2 }
@@ -120,7 +120,7 @@ private fun post(request: QuizRequest): QuizResponse = withTestApplication(Appli
 }
 
 class TopicFinderTest : StringSpec({
-    "Related topics must be sorted in order of relevance" {
+    "Related topics should be sorted in order of relevance" {
         findRelatedTopics(
             listOf("Bob was born in Mexico.", "Bob moved from Mexico to Canada, and then back to Mexico again.")
         ) shouldBe listOf("Mexico", "Canada")
@@ -148,9 +148,9 @@ class QuestionGeneratorTest : StringSpec() {
             withClue(answers.toString()) { answers shouldHaveSize if (duplicateAnswers) 2 else 1 }
         }
 
-        "Multiple questions with the same answer must be preserved if duplicate answers are allowed" { test(true) }
+        "Multiple questions with the same answer should be preserved if duplicate answers are allowed" { test(true) }
 
-        "Multiple questions with the same answer must'nt be preserved if duplicate answers are'nt allowed" {
+        "Multiple questions with the same answer should'nt be preserved if duplicate answers are'nt allowed" {
             test(false)
         }
     }

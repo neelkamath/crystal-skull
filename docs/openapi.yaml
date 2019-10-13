@@ -1,6 +1,6 @@
 openapi: 3.0.2
 info:
-  title: Crystal Skull API
+  title: Crystal Skull
   version: '0'
   description: |
     Generates an entire quiz in English with just a topic name, or even nothing at all for a random one. You can also
@@ -153,6 +153,7 @@ paths:
                         answerOffset:
                           start: 34
                           end: 44
+                        answer: Gil Amelio
                         type: person
                     metadata:
                       topic: Apple Inc.
@@ -168,10 +169,11 @@ paths:
                           - June 12, 1956
                           - November 26, 1976
                           - 1985, September 27
-                          - '1967'
+                          - '1985'
                         answerOffset:
                           start: 58
                           end: 62
+                        answer: '1985'
                         type: date
                     related: [Microsoft]
               schema:
@@ -201,7 +203,9 @@ paths:
                           minItems: 4
                           maxItems: 4
                         answerOffset:
-                          description: The character offsets of the correct option
+                          description:
+                            The character offsets of the correct option in the `question`. This may be useful if the
+                            `answer` occurs multiple times in the `question`.
                           type: object
                           properties:
                             start:
@@ -211,11 +215,14 @@ paths:
                               type: integer
                               description: Ending offset
                           required: [start, end]
+                        answer:
+                          description: The `string` in the `question` marked by `answerOffset`
+                          type: string
                         type:
                           description: Type of question
                           type: string
                           enum: [date, location, money, organization, percentage, person, time]
-                      required: [question, answerOffset, options, type]
+                      required: [question, answerOffset, answer, options, type]
                   metadata:
                     description: This will be present if the quiz was generated for a topic, but not for supplied text.
                     type: object

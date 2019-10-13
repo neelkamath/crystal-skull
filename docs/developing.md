@@ -18,9 +18,9 @@ You can open `build/reports/tests/test/index.html` in your browser to view the r
 
 ### Production
 
-`docker build -t crytal-skull .`
+`docker build -t crystal-skull .`
 
-To serve at `http://localhost:80`, run `docker run --rm -p 80:80 crytal-skull`. You can change the port by setting the `PORT` environment variable (e.g., `docker run --rm -e PORT=8080 -p 8080:8080 crytal-skull`).
+To serve at `http://localhost:80`, run `docker run --rm -p 80:80 crystal-skull`. You can change the port by setting the `PORT` environment variable (e.g., `docker run --rm -e PORT=8080 -p 8080:8080 crystal-skull`). The container `EXPOSE`s port `80`.
 
 ## Specification
 
@@ -55,6 +55,7 @@ The mock server will be running at `http://localhost:4010`.
 ## Releases
 
 - If required, bump the HTTP API version in `docs/openapi.yaml` and `build.gradle.kts`.
+- If required, update the [Docker Hub repository](https://hub.docker.com/r/neelkamath/crystal-skull)'s **Overview**.
 - For every commit to the `master` branch in which the tests have passed, the following will automatically be done.
     - If there is a new HTTP API version, a git tag and GitHub release will be created.
     - The new images will be uploaded to Docker Hub.

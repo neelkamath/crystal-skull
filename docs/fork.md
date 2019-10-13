@@ -13,7 +13,7 @@
     1. Enter an **Access Token Description**.
     1. Click **Create**.
     1. Note down your access token for later.
-1. Set up releases.
+1. Set up VCS releases.
     1. Go to your [GitHub settings](https://github.com/settings/tokens).
     1. Click **Generate new token**.
     1. Enter a **Note**.

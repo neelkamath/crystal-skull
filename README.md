@@ -12,7 +12,7 @@ You can try out the HTTP API using the development server `https://crystal-skull
 
 ### Running Your Own Instance
 
-Install [Docker v19](https://hub.docker.com/search/?type=edition&offering=community).
+Install [Docker](https://hub.docker.com/search/?type=edition&offering=community).
 
 To serve at `http://localhost:80`, run `docker run --rm -p 80:80 neelkamath/crytal-skull`. 
 
