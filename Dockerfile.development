@@ -1,0 +1,17 @@
+FROM openjdk:8
+
+RUN apt update && apt install -y curl \
+  && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /app
+COPY gradle/ gradle/
+COPY src/main/ src/main/
+COPY build.gradle.kts gradle.properties gradlew settings.gradle.kts ./
+
+RUN ./gradlew --no-daemon assemble
+
+ENV PORT 80
+EXPOSE 80
+VOLUME /app
+
+cmd ["bash"]
