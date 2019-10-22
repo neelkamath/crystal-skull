@@ -1,0 +1,8 @@
+version: '3.7'
+services:
+  nlp:
+    image: neelkamath/spacy-server:v1
+  quiz:
+    build: .
+    depends_on: [nlp]
+    ports: [80:80]

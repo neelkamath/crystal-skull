@@ -24,7 +24,7 @@ To serve at `http://localhost:80`, run `docker run --rm -p 80:80 crystal-skull`.
 
 ## Specification
 
-`docs/openapi.yaml` is the [OpenAPI specification](https://swagger.io/specification/) for the HTTP API.
+`docs/openapi.yaml` is the [OpenAPI specification](https://swagger.io/specification/) for the HTTP API. Use `$ref` instead of inlining `schema`s so that OpenAPI Generator will name give usable names to the models.
 
 ### Testing
 

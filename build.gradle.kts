@@ -6,7 +6,6 @@ plugins {
 }
 
 version = 0
-
 application.mainClassName = "io.ktor.server.netty.EngineMain"
 
 repositories { jcenter() }
@@ -18,7 +17,6 @@ dependencies {
     implementation("io.ktor:ktor-gson:$ktorVersion")
     implementation("ch.qos.logback:logback-classic:1.2.3")
     implementation("com.neelkamath.kwikipedia:kwikipedia:0.6.1")
-    implementation("org.apache.opennlp:opennlp-tools:1.9.1")
     implementation("com.github.javafaker:javafaker:1.0.0")
     implementation(kotlin("stdlib-jdk8"))
     testImplementation("io.ktor:ktor-server-test-host:$ktorVersion")
@@ -40,7 +38,12 @@ if (gradle.startParameter.taskNames.contains("githubRelease")) {
     githubRelease {
         token(property("GITHUB_TOKEN") as String)
         owner("neelkamath")
-        body("Download and open the release asset, `redoc-static.html`, in your browser to view the HTTP API documentation.")
+        body(
+            """
+            Download and open the release asset, `redoc-static.html`, in your browser to view the HTTP API 
+            documentation.
+            """.replace(Regex("""\s+"""), " ")
+        )
         overwrite(true)
         prerelease(project.version == 0)
         releaseAssets("redoc-static.html")

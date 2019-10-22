@@ -1,12 +1,5 @@
 package com.neelkamath.crystalskull
 
-import opennlp.tools.namefind.NameFinderME
-import opennlp.tools.namefind.TokenNameFinderModel
-import opennlp.tools.sentdetect.SentenceDetectorME
-import opennlp.tools.sentdetect.SentenceModel
-import opennlp.tools.tokenize.TokenizerME
-import opennlp.tools.tokenize.TokenizerModel
-import opennlp.tools.util.Span
 import java.io.FileInputStream
 
 /** A document useful for enhancing the accuracy of a [NameFinderME]. */
@@ -74,7 +67,7 @@ object NameFinder {
     ): List<ProcessedSentence> {
         val list = mutableListOf<ProcessedSentence>()
         for ((index, sentence) in document.withIndex()) {
-            finder.find(sentence.tokens.toTypedArray()).filter { it.prob >= .9 }.takeIf { it.isNotEmpty() }?.let {
+            finder.find(sentence.tokens.toTypedArray()).filter { it.prob >= .9 }.takeIf { it.isNotEmpty() }.let {
                 list.add(process(it, sentence, document.elementAtOrNull(index - 1)?.sentence))
             }
         }

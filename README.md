@@ -24,29 +24,7 @@ The container `EXPOSE`s port `80`.
 
 ### Generating an SDK
 
-You can generate an API wrapper to use the HTTP API using these steps.
-
-1. Install [node.js](https://nodejs.org/en/download/).
-1. `npm i -g @openapitools/openapi-generator-cli`.
-1. Run `openapi-generator list`.
-
-    This will output something like:
-    ```
-    CLIENT generators:
-        - ada
-        - android
-        ...
-        - javascript
-        ...
-    SERVER generators:
-        - ada-server
-        - aspnetcore
-        ...
-    ```
-    Pick one of these (e.g., `javascript`).
-1. Run `openapi-generator generate -g <TARGET> -o <DIRECTORY> -i https://raw.githubusercontent.com/neelkamath/crystal-skull/master/docs/openapi.yaml`, where `<TARGET>` is what you picked, and `<DIRECTORY>` is the directory to output the generated SDK to. A documented and ready-to-use wrapper will now be available at `<DIRECTORY>`.
-
-For advanced use cases, please see the [OpenAPI Generator documentation](https://openapi-generator.tech/).
+You can generate a wrapper for the HTTP API using [OpenAPI Generator](https://openapi-generator.tech/) on the file `https://raw.githubusercontent.com/neelkamath/crystal-skull/master/docs/openapi.yaml`.
 
 ## [Usage](https://neelkamath.gitlab.io/crystal-skull/)
 
