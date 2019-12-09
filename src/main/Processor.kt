@@ -1,103 +1,119 @@
 package com.neelkamath.crystalskull
 
-import java.io.FileInputStream
+import com.google.gson.annotations.SerializedName
+import com.neelkamath.crystalskull.Json.gson
+import com.neelkamath.crystalskull.NLP.recognizeNamedEntities
+import com.neelkamath.crystalskull.NLP.sentencize
+import retrofit2.Call
+import retrofit2.Response
+import retrofit2.Retrofit
+import retrofit2.converter.gson.GsonConverterFactory
+import retrofit2.http.Body
+import retrofit2.http.GET
+import retrofit2.http.POST
 
-/** A document useful for enhancing the accuracy of a [NameFinderME]. */
-internal typealias Document = List<TokenizedSentence>
+object NLP {
+    private val service = Retrofit.Builder()
+        .baseUrl(System.getenv("SPACY_SERVER_URL"))
+        .addConverterFactory(GsonConverterFactory.create(gson))
+        .build()
+        .create(NLPService::class.java)
 
-/** A section of text (e.g., the early life of Bill Gates). */
-internal typealias ProcessedSection = List<ProcessedSentence>
+    /**
+     * Although you could pass the full text as a single array item, it would be faster to split large text into
+     * multiple items. Each item needn't be semantically related.
+     */
+    private data class NERRequest(val sections: List<String>)
 
-/** [tokens] are the original [sentence]'s tokens. */
-internal data class TokenizedSentence(val sentence: String, val tokens: List<String>)
+    private data class NERResponse(val data: List<NamedEntity>)
 
-/** [names] are the entities (each being an [entity]) fround in the [context]. */
-internal data class ProcessedSentence(val context: ProcessedContext, val entity: NamedEntity, val names: List<String>)
+    /** The recognized named [entities] in the sentence's [text]. */
+    data class NamedEntity(val entities: List<RecognizedEntity>, val text: String)
 
-/** The original [sentence] processed, and if there was one, the sentence [previous] to it. */
-internal data class ProcessedContext(val sentence: String, val previous: String? = null)
+    data class RecognizedEntity(
+        /** Recognized entity. */
+        val text: String,
+        val label: Label,
+        /** The character offset for the start of the entity. */
+        val startChar: Int,
+        /** The character offset for the end of the entity. */
+        val endChar: Int,
+        val lemma: String,
+        /** The token offset for the start of the entity. */
+        val start: Int,
+        /** The token offset for the end of the entity. */
+        val end: Int,
+        /** The text content of the entity with a trailing whitespace character if the last token has one. */
+        @SerializedName("text_with_ws") val textWithWhitespace: String
+    )
 
-object Tokenizer {
-    /** English tokenizer. */
-    private val tokenizer: Lazy<TokenizerME> =
-        lazy { TokenizerME(TokenizerModel(FileInputStream("src/main/resources/en-token.bin"))) }
-    /** English sentence detector. */
-    private val sentenceDetector: Lazy<SentenceDetectorME> =
-        lazy { SentenceDetectorME(SentenceModel(FileInputStream("src/main/resources/en-sent.bin"))) }
+    private data class TokenizerRequest(val text: String)
 
-    /** Runs an English tokenizer on [data]. */
-    @Synchronized
-    internal fun tokenize(data: String): List<TokenizedSentence> =
-        sentenceDetector.value.sentDetect(data).map { TokenizedSentence(it, tokenizer.value.tokenize(it).toList()) }
+    private data class TokenizerResponse(val tokens: List<String>)
+
+    private data class SentencizerRequest(val text: String)
+
+    private data class SentencizerResponse(val sentences: List<String>)
+
+    private interface NLPService {
+        @POST("ner")
+        fun recognizeNamedEntities(@Body request: NERRequest): Call<NERResponse>
+
+        @POST("tokenizer")
+        fun tokenize(@Body request: TokenizerRequest): Call<TokenizerResponse>
+
+        @POST("sentencizer")
+        fun sentencize(@Body request: SentencizerRequest): Call<SentencizerResponse>
+
+        @GET("health_check")
+        fun checkHealth(): Call<Response<Unit>>
+    }
+
+    fun recognizeNamedEntities(strings: List<String>): List<NamedEntity> =
+        service.recognizeNamedEntities(NERRequest(strings)).execute().body()!!.data
+
+    fun tokenize(text: String): List<String> =
+        service.tokenize(TokenizerRequest(text)).execute().body()!!.tokens
+
+    fun sentencize(data: String): List<String> =
+        service.sentencize(SentencizerRequest(data)).execute().body()!!.sentences
+
+    /** Whether the NLP service is operational. */
+    fun isHealthy(): Boolean = service.checkHealth().execute().isSuccessful
 }
 
-object NameFinder {
-    /** English name finders. */
-    private val nameFinders: Map<NamedEntity, Lazy<NameFinderME>> = NamedEntity.values().associate {
-        it to lazy { getNameFinder(it) }
-    }
+/** A section of text, such as one on the early life of Bill Gates. */
+typealias ProcessedSection = List<ProcessedSentence>
 
-    /** English name finder for [entity]. */
-    private fun getNameFinder(entity: NamedEntity): NameFinderME =
-        NameFinderME(TokenNameFinderModel(FileInputStream("src/main/resources/en-ner-$entity.bin")))
+/** [tokens] are the original [sentence]'s tokens. */
+data class TokenizedSentence(val sentence: String, val tokens: List<String>)
 
-    /** Parses English [documents] to find [entity]s. Sentences without [entity]s will be discarded. */
-    @Synchronized
-    internal fun findNames(documents: List<Document>, entity: NamedEntity): List<ProcessedSentence> {
-        val list = mutableListOf<ProcessedSentence>()
-        val finder = nameFinders.getValue(entity).value
-        for (document in documents) {
-            list.addAll(findNames(document, entity, finder))
-            finder.clearAdaptiveData()
+/** [names] are the entities (each having the same [label]) fround in the [context]. */
+data class ProcessedSentence(val context: ProcessedContext, val label: Label, val names: List<String>)
+
+/** The original [sentence] processed, and if there was one, the sentence [previous] to it. */
+data class ProcessedContext(val sentence: String, val previous: String? = null)
+
+/** Tokenizes English [data]. */
+fun tokenize(data: String): List<TokenizedSentence> =
+    sentencize(data).map { TokenizedSentence(it, NLP.tokenize(it)) }
+
+/**
+ * Uses NER on an English [document].
+ *
+ * The [ProcessedContext.previous] sentence from each returned [ProcessedSentence] is the sentence prior to each
+ * [TokenizedSentence] in the [document]. So if you are using the [ProcessedContext.previous] sentence, you must only
+ * pass semantically related contents in the [document] (e.g., a single paragraph). Otherwise, the first sentence from
+ * the previous paragraph would be used as in the [ProcessedContext] even though it isn't contextual.
+ */
+fun findNames(document: List<TokenizedSentence>): List<ProcessedSentence> {
+    val sentences = document.map { it.sentence }
+    val data = recognizeNamedEntities(sentences)
+    return data.mapIndexed { index, namedEntity ->
+        val sentence = data.elementAt(index).text
+        val context = ProcessedContext(sentence, sentences.elementAtOrNull(sentences.indexOf(sentence) - 1))
+        namedEntity.entities.filter { it.text != "%" }.groupBy { it.label }.mapValues { entity ->
+            ProcessedSentence(context, entity.key, entity.value.map { it.text })
         }
-        return list
-    }
-
-    /**
-     * Finds [entity]s in an English [document] (sentences without [entity]s will be discarded).
-     *
-     * If you are finding names in [Document]s, you can supply your own [finder]. This way you can enhance the results
-     * by calling [NameFinderME.clearAdaptiveData] after each finding.
-     */
-    @Synchronized
-    internal fun findNames(
-        document: Document,
-        entity: NamedEntity,
-        finder: NameFinderME = nameFinders.getValue(entity).value
-    ): List<ProcessedSentence> {
-        val list = mutableListOf<ProcessedSentence>()
-        for ((index, sentence) in document.withIndex()) {
-            finder.find(sentence.tokens.toTypedArray()).filter { it.prob >= .9 }.takeIf { it.isNotEmpty() }.let {
-                list.add(process(it, sentence, document.elementAtOrNull(index - 1)?.sentence))
-            }
-        }
-        return list
-    }
-
-    /**
-     * Converts the [spans] belonging to the same [Span.type] of a [tokenizedSentence].
-     *
-     * If there was one, include the [previous] sentence to [tokenizedSentence].
-     */
-    private fun process(spans: List<Span>, tokenizedSentence: TokenizedSentence, previous: String?): ProcessedSentence {
-        if (spans.any { it.type != spans[0].type }) throw Error("All <spans> must have the same <Span.type>")
-        return ProcessedSentence(
-            ProcessedContext(tokenizedSentence.sentence, previous),
-            NamedEntity.valueOf(spans[0].type),
-            spans.map { detokenizeNames(tokenizedSentence.tokens, it) }
-        )
-    }
-
-    /** Gets the entity [span]ned in [tokens]. */
-    private fun detokenizeNames(tokens: List<String>, span: Span): String = tokens
-        .slice(span.start until span.end)
-        .joinToString(" ")
-        .let { if (it.endsWith(" .")) it.replace(Regex("""( \.)$"""), ".") else it }
-        .replace(" '", "'")
-        .replace(" , ", ", ")
-        .replace(" %", "%")
-        .replace("( ", "(")
-        .let { if (span.type == "money" && isSymbol(it)) it.replaceFirst(" ", "") else it }
-
-    private fun isSymbol(string: String) = with(string.split(" ")[0]) { length == 1 && !matches(Regex("""^(\w|\d)""")) }
+    }.flatMap { it.values }
 }

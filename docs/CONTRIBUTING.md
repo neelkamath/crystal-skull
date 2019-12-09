@@ -4,8 +4,7 @@ If you're forking the repo to develop the project as your own and not just to se
 
 ## Installation
 
-1. If you are developing the server, install a [Java JDK or JRE](http://www.oracle.com/technetwork/java/javase/downloads/index.html) version 8 or higher. 
-1. If you are testing the Dockerfile, install [Docker](https://hub.docker.com/search/?type=edition&offering=community).
+1. If you are developing the server, install [Docker](https://hub.docker.com/search/?type=edition&offering=community).
 1. If you are generating documentation, testing the spec, or mocking the server, install [node.js](https://nodejs.org/en/download/).
 1. If you are generating documentation, run `npm i -g redoc-cli`.
 1. If you are testing the spec, run `npm i -g @stoplight/spectral`.

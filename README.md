@@ -8,23 +8,19 @@ The name _Crystal Skull_ comes from the movie _[Indiana Jones and the Kingdom of
 
 ## Installation
 
-You can try out the HTTP API using the development server `https://crystal-skull.herokuapp.com`. However, this server may be offline or serving a different API in the future. Hence, it's highly recommended to run your own instance.
-
-### Running Your Own Instance
+### Server
 
 Install [Docker](https://hub.docker.com/search/?type=edition&offering=community).
 
-To serve at `http://localhost:80`, run `docker run --rm -p 80:80 neelkamath/crytal-skull`. 
+To serve at `http://localhost:80`, run `docker run --rm -p 80:80 neelkamath/crytal-skull`.
 
-You can change the port by setting the `PORT` environment variable (e.g., `docker run --rm -e PORT=8080 -p 8080:8080 neelkamath/crytal-skull`).
-
-To run a particular version, run `docker run --rm -p 80:80 neelkamath/crytal-skull:<TAG>`, where `<TAG>` is from `https://hub.docker.com/r/neelkamath/crystal-skull/tags`.
+You can find specific versions on the [Docker Hub page](https://hub.docker.com/r/neelkamath/crystal-skull/tags).
 
 The container `EXPOSE`s port `80`.
 
 ### Generating an SDK
 
-You can generate a wrapper for the HTTP API using [OpenAPI Generator](https://openapi-generator.tech/) on the file `https://raw.githubusercontent.com/neelkamath/crystal-skull/master/docs/openapi.yaml`.
+You can generate a wrapper for the HTTP API using [OpenAPI Generator](https://openapi-generator.tech/) on the file [`https://raw.githubusercontent.com/neelkamath/crystal-skull/master/docs/openapi.yaml`](https://raw.githubusercontent.com/neelkamath/crystal-skull/master/docs/openapi.yaml).
 
 ## [Usage](https://neelkamath.gitlab.io/crystal-skull/)
 
@@ -32,11 +28,13 @@ You can generate a wrapper for the HTTP API using [OpenAPI Generator](https://op
 
 ## Credits
 
-The template for the README's description came from [Joel on Software](https://www.joelonsoftware.com/2002/05/09/product-vision/).
-
-Although he didn't convey how or what to do in any way, [Sundararaman](https://github.com/vsundar17697) showed me the idea of generating quizzes containing fill-in-the-blank questions using Wikipedia.
+[![Built with spaCy](https://img.shields.io/badge/built%20with-spaCy-09a3d5.svg)](https://spacy.io)
 
 The quiz generator uses text from [Wikipedia](https://en.wikipedia.org/) which is licensed under [CC-BY-SA](http://creativecommons.org/licenses/by-sa/3.0/).
+
+Although he didn't convey how or what to do in any way, [Sundararaman](https://github.com/vsundar17697) showed me the idea of generating fill-in-the-blank questions using Wikipedia.
+
+The [`wait-for-it.sh`](wait-for-it.sh) script was taken from [vishnubob](https://github.com/vishnubob/wait-for-it).
 
 ## License
 

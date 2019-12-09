@@ -1,15 +1,17 @@
-FROM openjdk:8 AS builder
-WORKDIR /app
-COPY gradle/ gradle/
-COPY src/main/ src/main/
-COPY build.gradle.kts gradle.properties gradlew settings.gradle.kts ./
-RUN ./gradlew shadowJar --no-daemon
+# Caches dependencies so that subsequent Docker builds only redownload dependencies if the build files change.
+FROM gradle:6.0.1-jre8 AS cache
+COPY build.gradle.kts gradle.properties settings.gradle.kts ./
+RUN gradle --no-daemon --refresh-dependencies
 
-FROM openjdk:8-jre-alpine
+FROM gradle:6.0.1-jdk8 AS builder
+COPY --from=cache /home/gradle/.gradle /home/gradle/.gradle
+COPY . .
+RUN gradle --no-daemon shadowJar
+
+FROM openjdk:jre-alpine
 RUN apk --no-cache add curl
-COPY --from=builder /app/build/libs/*.jar crystal-skull-all.jar
-COPY --from=builder /app/build/resources/main/ src/main/resources/
-ENV PORT 80
+COPY --from=builder /home/gradle/build/libs/*.jar crystal-skull-all.jar
+COPY --from=builder /home/gradle/build/resources/main src/main/resources
 EXPOSE 80
 HEALTHCHECK --timeout=5s --start-period=5s --retries=1 \
     CMD curl -f http://localhost:$PORT/health_check

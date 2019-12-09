@@ -1,18 +1,16 @@
 package com.neelkamath.crystalskull
 
 /** Search results for a topic. */
-internal data class SearchResponse(val topics: List<Topic>)
+data class SearchResponse(val topics: List<Topic>)
 
 /** A [topic] (e.g., `"Apple Inc."`) and its description. */
-internal data class Topic(val topic: String, val description: String)
+data class Topic(val topic: String, val description: String)
 
 /**
  * Request to generate a quiz either on a Wikipedia [topic] or the supplied [text].
  *
  * If supplying [text] on a topic such as Bill Gates, each item in the [List] should be on a subtopic such as Early
  * Life or Career.
- *
- * The quiz must contain certain [types] of questions only.
  *
  * The quiz mustn't contain more than [max] questions. If `null`, the quiz should contain all the possible questions.
  *
@@ -29,42 +27,72 @@ internal data class Topic(val topic: String, val description: String)
  * founded by Steve Jobs in April 1976." (where the answer is "Steve Jobs"), and another might be "Apple was founded by
  * Steve Jobs in April 1976." (where the answer is "April 1976").
  */
-internal data class QuizRequest(
+data class QuizRequest(
     val topic: String? = null,
     val text: List<String>? = null,
-    val types: List<NamedEntity> =
-        listOf(NamedEntity.date, NamedEntity.location, NamedEntity.organization, NamedEntity.person),
     val max: Int? = null,
     val allowSansYears: Boolean = false,
     val duplicateAnswers: Boolean = false,
     val duplicateSentences: Boolean = false
 ) {
     init {
-        if (topic != null && text != null) throw Error(invalidMessage)
+        if (topic != null && text != null) throw Error("Both <topic> and <text> cannot be non-null")
         if (max != null && max < 0) throw Error("<max> cannot be negative")
-    }
-
-    companion object {
-        internal const val invalidMessage = "Both <topic> and <text> cannot be non-null"
     }
 }
 
 /** The type of entity for NLP named entity recognition. */
-internal enum class NamedEntity { date, location, money, organization, percentage, person, time }
+enum class Label {
+    /** People, including fictional. */
+    PERSON,
+    /** Nationalities or religious or political groups. */
+    NORP,
+    /** Buildings, airports, highways, bridges, etc. */
+    FAC,
+    /** Companies, agencies, institutions, etc. */
+    ORG,
+    /** Countries, cities, states. */
+    GPE,
+    /** Non-GPE locations, mountain ranges, bodies of water. */
+    LOC,
+    /** Objects, vehicles, foods, etc. (Not services.) */
+    PRODUCT,
+    /** Named hurricanes, battles, wars, sports events, etc. */
+    EVENT,
+    /** Titles of books, songs, etc. */
+    WORK_OF_ART,
+    /** Named documents made into laws. */
+    LAW,
+    /** Any named language. */
+    LANGUAGE,
+    /** Absolute or relative dates or periods. */
+    DATE,
+    /** Times smaller than a day. */
+    TIME,
+    PERCENT,
+    /** Monetary values, including unit. */
+    MONEY,
+    /** Measurements, as of weight or distance. */
+    QUANTITY,
+    /** “first”, “second”, etc. */
+    ORDINAL,
+    /** Numerals that do not fall under another type. */
+    CARDINAL
+}
 
 /**
  * The topics [related] to the [quiz] can also have quizzes generated for them.
  *
  * [metadata] will not be `null` only if the quiz was generated using a topic name.
  */
-internal data class QuizResponse(
+data class QuizResponse(
     val quiz: List<QuizQuestion>,
     val metadata: QuizMetadata? = null,
     val related: List<String>? = null
 )
 
 /** The [url] of the [topic] a quiz was generated on. */
-internal data class QuizMetadata(val topic: String, val url: String)
+data class QuizMetadata(val topic: String, val url: String)
 
 /**
  * Multiple choice fill-in-the-blank [question] of a particular [type] having four [options].
@@ -78,11 +106,11 @@ internal data class QuizMetadata(val topic: String, val url: String)
  * good."` and the [answer] is `"Bob"`, then the  [AnswerOffset.start] and [AnswerOffset.end] will be `0` and `3`
  * respectively.
  */
-internal data class QuizQuestion(
+data class QuizQuestion(
     val question: String,
     val options: Set<String>,
     val answerOffset: AnswerOffset,
-    val type: NamedEntity,
+    val type: Label,
     val context: String? = null
 ) {
     val answer = question.slice(answerOffset.start until answerOffset.end)
@@ -94,8 +122,10 @@ internal data class QuizQuestion(
 }
 
 /** The [start]ing and [end]ing character offsets of an answer in a [String]. */
-internal data class AnswerOffset(val start: Int, val end: Int) {
+data class AnswerOffset(val start: Int, val end: Int) {
     init {
         if (start >= end) throw Error("<start> must be lesser than <end>: $this")
     }
 }
+
+data class HealthCheck(val quiz: Boolean, val nlp: Boolean)
