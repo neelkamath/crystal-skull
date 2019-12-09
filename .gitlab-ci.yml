@@ -16,7 +16,7 @@ test-server:
   image: docker/compose
   script:
     - mkdir -p build/reports/tests/test
-    - docker-compose  -f docker-compose.yml -f docker-compose.override.yml -f docker-compose.test.yml
+    - docker-compose -f docker-compose.yml -f docker-compose.override.yml -f docker-compose.test.yml
       up --build --abort-on-container-exit --exit-code-from test
   artifacts:
     paths: [build/reports/tests/test/]

@@ -2,7 +2,7 @@ version: '3.7'
 services:
   test:
     image: gradle:6.0.1-jdk8
-    command: bash wait-for-it.sh -t 0 quiz:80 -- gradle --no-daemon -- test
+    command: bash wait-for-it.sh -t 0 quiz:80 -- gradle --no-daemon test
     volumes:
       - type: bind
         source: .

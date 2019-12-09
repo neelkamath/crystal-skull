@@ -53,8 +53,8 @@ class TrendingSearchTest : StringSpec({
 
     "A search response should have a status code of 200" { results.code() shouldBe 200 }
 
-    "At least one and at most five trending topics should be returned by default" {
-        results.body()!!.topics.size shouldBeInRange 1..5
+    "At least 1 and at most 25 trending topics should be returned by default" {
+        results.body()!!.topics.size shouldBeInRange 1..25
     }
 
     "Requesting seven topics should beckon at least one and at most seven results" {
