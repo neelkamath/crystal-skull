@@ -3,7 +3,6 @@ package com.neelkamath.crystalskull
 import com.google.gson.FieldNamingPolicy
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
-import com.neelkamath.crystalskull.Json.gson
 import com.neelkamath.crystalskull.NLP.isHealthy
 import com.neelkamath.kwikipedia.getPage
 import com.neelkamath.kwikipedia.search
@@ -24,15 +23,8 @@ import io.ktor.routing.get
 import io.ktor.routing.post
 import io.ktor.util.pipeline.PipelineContext
 
-/** Use this whenever you have to manually serialize or deserialize JSON. */
-object Json {
-    /** Shared Gson configuration for the entire project. */
-    val gson: Gson = GsonBuilder().setFieldNamingPolicy(FieldNamingPolicy.LOWER_CASE_WITH_UNDERSCORES).create()
-
-    inline fun <reified T> fromJson(string: String): T = gson.fromJson(string, T::class.java)
-
-    fun <T> toJson(data: T): String = gson.toJson(data)
-}
+/** Shared Gson configuration for the entire project. */
+val gson: Gson = GsonBuilder().setFieldNamingPolicy(FieldNamingPolicy.LOWER_CASE_WITH_UNDERSCORES).create()
 
 fun Application.main() {
     install(CallLogging)

@@ -1,7 +1,6 @@
 package com.neelkamath.crystalskull
 
 import com.google.gson.annotations.SerializedName
-import com.neelkamath.crystalskull.Json.gson
 import com.neelkamath.crystalskull.NLP.recognizeNamedEntities
 import com.neelkamath.crystalskull.NLP.sentencize
 import retrofit2.Call

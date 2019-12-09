@@ -3,7 +3,6 @@
 package com.neelkamath.crystalskull.test
 
 import com.neelkamath.crystalskull.*
-import com.neelkamath.crystalskull.Json.gson
 import com.neelkamath.crystalskull.test.Server.quiz
 import com.neelkamath.crystalskull.test.Server.requestHealthCheck
 import com.neelkamath.crystalskull.test.Server.requestQuiz
@@ -32,7 +31,6 @@ import retrofit2.http.GET
 import retrofit2.http.POST
 import retrofit2.http.Query
 import java.util.concurrent.TimeUnit
-
 
 class SearchTest : StringSpec({
     val results = requestSearch("appl")
