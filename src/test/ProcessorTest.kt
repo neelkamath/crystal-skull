@@ -28,7 +28,7 @@ class NameFinderTest : StringSpec({
     }
 
     "A sentence without a previous sentence should have its context set to null" {
-        names[17].context.previous.shouldBeNull()
+        names[0].context.previous.shouldBeNull()
     }
 
     "A sentence should have its context set to its previous sentence even if the previous sentence is sans tokens" {
