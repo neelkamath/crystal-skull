@@ -9,13 +9,17 @@ variables:
   # See https://github.com/docker-library/docker/pull/166
   DOCKER_TLS_CERTDIR: ""
 
-stages: [test, build, push, deploy]
+stages: [test, version, build, deploy]
 
 test-server:
   stage: test
-  image: openjdk:8
-  script: ./gradlew test
+  image: docker/compose
+  script:
+    - mkdir -p build/reports/tests/test
+    - docker-compose -f docker-compose.yml -f docker-compose.override.yml -f docker-compose.test.yml
+      up --build --abort-on-container-exit --exit-code-from test
   artifacts:
+    when: always
     paths: [build/reports/tests/test/]
 
 test-spec:
@@ -25,18 +29,23 @@ test-spec:
     - npm i -g @stoplight/spectral
     - spectral lint docs/openapi.yaml
 
+save-version:
+  stage: version
+  script:
+    - version=$(./gradlew --no-daemon properties | grep version -m 1)
+    - 'echo v${version#*: } > version.txt'
+  artifacts:
+    paths: [version.txt]
+  only: [master]
+
 build-image:
   stage: build
   image: docker:dind
   script:
     - echo $CI_REGISTRY_PASSWORD | docker login -u $CI_REGISTRY_USER --password-stdin $CI_REGISTRY
-    - export version=$(grep version docs/openapi.yaml -m 1)
-    - 'echo v${version#*: } > version.txt'
     - docker build -t $CI_REGISTRY_IMAGE -t $CI_REGISTRY_IMAGE:$(cat version.txt) .
     - docker push $CI_REGISTRY_IMAGE
     - docker push $CI_REGISTRY_IMAGE:$(cat version.txt)
-  artifacts:
-    paths: [version.txt]
   only: [master]
 
 build-docs:
@@ -50,7 +59,7 @@ build-docs:
   only: [master]
 
 docker-hub:
-  stage: push
+  stage: deploy
   image: docker:dind
   script:
     - echo $DOCKER_HUB_PASSWORD | docker login -u $DOCKER_HUB_USER --password-stdin https://index.docker.io/v1/
@@ -62,34 +71,10 @@ docker-hub:
     - docker push $DOCKER_HUB_USER/crystal-skull:$(cat version.txt)
   only: [master]
 
-heroku-push:
-  stage: push
-  image: docker:dind
-  script:
-    - echo $HEROKU_AUTH_TOKEN | docker login --username=_ --password-stdin registry.heroku.com
-    - docker pull $CI_REGISTRY_IMAGE
-    - docker tag $CI_REGISTRY_IMAGE registry.heroku.com/$HEROKU_APP/web
-    - docker push registry.heroku.com/$HEROKU_APP/web
-    - echo $(docker inspect registry.heroku.com/$HEROKU_APP/web --format='{{.Id}}') > image_id.txt
-  artifacts:
-    paths: [image_id.txt]
-  only: [master]
-
-heroku-release:
-  stage: deploy
-  image: appropriate/curl
-  script: >
-    curl -nX PATCH https://api.heroku.com/apps/"$HEROKU_APP"/formation \
-      -d '{"updates":[{"type":"web","docker_image":"'"$(cat image_id.txt)"'"}]}' \
-      -H 'Content-Type: application/json' \
-      -H 'Accept: application/vnd.heroku+json; version=3.docker-releases' \
-      -H "Authorization: Bearer $HEROKU_AUTH_TOKEN"
-  only: [master]
-
 github-release:
   stage: deploy
   image: openjdk:8
-  script: ./gradlew githubRelease -PGITHUB_TOKEN=$GITHUB_TOKEN
+  script: ./gradlew --no-daemon githubRelease -PGITHUB_TOKEN=$GITHUB_TOKEN
   only: [master]
 
 pages:

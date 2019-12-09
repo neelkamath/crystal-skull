@@ -1,0 +1,14 @@
+version: '3.7'
+services:
+  nlp:
+    image: neelkamath/spacy-server:v1
+    networks: [backend]
+  quiz:
+    depends_on: [nlp]
+    ports: ['80:80']
+    networks: [backend]
+    environment:
+      SPACY_SERVER_URL: http://nlp:8080
+networks:
+  backend:
+    driver: bridge

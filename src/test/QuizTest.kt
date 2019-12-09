@@ -1,84 +1,72 @@
 package com.neelkamath.crystalskull.test
 
 import com.neelkamath.crystalskull.*
-import io.kotlintest.matchers.boolean.shouldBeFalse
-import io.kotlintest.matchers.boolean.shouldBeTrue
+import io.kotlintest.matchers.collections.shouldContain
 import io.kotlintest.matchers.collections.shouldContainAll
-import io.kotlintest.matchers.string.shouldMatch
+import io.kotlintest.matchers.types.shouldBeNull
 import io.kotlintest.matchers.withClue
 import io.kotlintest.shouldBe
 import io.kotlintest.specs.StringSpec
 
-class RelevantOptionTest : StringSpec({
-    "Options must only be taken from the section the question is from unless more are required" {
-        val relevantOptions = setOf("Apple", "Google", "Microsoft")
-        Quizmaster()
-            .getOptions(
-                NamedEntity.person,
-                Quizmaster.CorrectOption(
-                    relevantOptions,
-                    options = setOf("IBM", "Mozilla", "Nintendo", "SEGA"),
-                    answer = "Google"
-                )
-            ) shouldContainAll relevantOptions
+class QuizmasterTest : StringSpec({
+    fun testPersonQuiz(personQuiz: List<QuizQuestion>) {
+        personQuiz.map { it.type }.forEach { it shouldBe Label.PERSON }
+        personQuiz.map { it.options }.forEach { it.shouldContainAll("Bill Gates", "Steve Jobs") }
+        personQuiz[0].answer shouldBe "Bill Gates"
+        personQuiz[0].answerOffset shouldBe AnswerOffset(0, 10)
+        personQuiz[1].answer shouldBe "Steve Jobs"
+        personQuiz[1].answerOffset shouldBe AnswerOffset(15, 25)
+    }
+
+    fun testDateQuestion(dateQuestion: QuizQuestion) {
+        dateQuestion.options shouldContain "1900s"
+        dateQuestion.answerOffset shouldBe AnswerOffset(43, 48)
+        dateQuestion.type shouldBe Label.DATE
+    }
+
+    "Questions should be created from processed sections" {
+        val sentence = "Bill Gates and Steve Jobs were born in the 1900s."
+        val context = ProcessedContext(sentence)
+        val quiz = Quizmaster().quiz(
+            listOf(
+                listOf(ProcessedSentence(context, Label.PERSON, names = listOf("Bill Gates", "Steve Jobs"))),
+                listOf(ProcessedSentence(context, Label.DATE, names = listOf("1900s")))
+            )
+        )
+        quiz.flatMap { entry ->
+            entry.value.map { it.question }
+        }.forEach { it shouldBe sentence }
+        quiz.map { it.key.context.previous }.forEach { it.shouldBeNull() }
+        testPersonQuiz(
+            quiz.getValue(ProcessedSentence(context, Label.PERSON, names = listOf("Bill Gates", "Steve Jobs")))
+        )
+        testDateQuestion(quiz.getValue(ProcessedSentence(context, Label.DATE, names = listOf("1900s")))[0])
     }
 })
 
-class DuplicatesRemoverTest : StringSpec() {
-    init {
-        val testSet =
-            setOf("Steve Paul Jobs", "Steve", "Steve Wozniak", "Steve Gary Wozniak", "Gil Steve", "Gil Amelio")
-        val test = { set: Set<String>, sought: String, duplicates: Set<String> ->
-            withClue("Sought: $sought") { removeDuplicates(set, sought) shouldBe set - duplicates }
-        }
+class DuplicatesRemoverTest : StringSpec({
+    val set = setOf("Steve Paul Jobs", "Steve", "Steve Wozniak", "Steve Gary Wozniak", "Gil Steve", "Gil Amelio")
 
-        "Smaller duplicates must be removed when a bigger string is sought" {
-            test(testSet, "Steve Wozniak", setOf("Steve", "Steve Gary Wozniak"))
-        }
+    fun test(set: Set<String>, sought: String, duplicates: Set<String>) =
+        withClue("Sought: $sought") { removeDuplicates(set, sought) shouldBe set - duplicates }
 
-        "Bigger duplicates must be removed when a smaller string is sought" {
-            test(testSet, "Steve", setOf("Steve Paul Jobs", "Steve Wozniak", "Steve Gary Wozniak", "Gil Steve"))
-        }
-
-        "String containing unique terms mustn't be removed when there are no duplicates" {
-            test(setOf("Neel K.", "Pasquale S.", "Lord G."), "Neel K.", setOf())
-        }
-
-        "Strings containing the same terms mustn't be removed when there are no duplicates" {
-            test(testSet, "Gil Amelio", setOf())
-        }
-    }
-}
-
-class YearContainerTest : StringSpec({
-    "Dates without four digits mustn't be considered as containing years" {
-        val date = "August 7"
-        withClue(date) { containsYear(date).shouldBeFalse() }
+    "Smaller duplicates should be removed when a bigger string is sought" {
+        test(set, sought = "Steve Wozniak", duplicates = setOf("Steve", "Steve Gary Wozniak"))
     }
 
-    "Dates containing four digits must be considered as containing years" {
-        val date1 = "07-06-2000"
-        withClue(date1) { containsYear(date1).shouldBeTrue() }
-        val date2 = "June 7, 2000"
-        withClue(date2) { containsYear(date2).shouldBeTrue() }
-    }
-})
-
-class EntityGeneratorTest : StringSpec({
-    "Randomly generated dates must look real" {
-        val month = Regex("""(January|February|March|April|May|June|July|August|September|October|November|December)""")
-        repeat(100) {
-            getRandomEntity(NamedEntity.date) shouldMatch Regex("""$month ([1-9]|[12][0-9]|3[01]), \d\d\d\d""")
-        }
+    "Bigger duplicates should be removed when a smaller string is sought" {
+        test(
+            set,
+            sought = "Steve",
+            duplicates = setOf("Steve Paul Jobs", "Steve Wozniak", "Steve Gary Wozniak", "Gil Steve")
+        )
     }
 
-    "Randomly generated percentages must look real" {
-        repeat(10) { getRandomEntity(NamedEntity.percentage) shouldMatch Regex("""(100|\d{1,2}(\.\d{1,2})?)%""") }
+    "String containing unique terms shouldn't be removed when there are no duplicates" {
+        test(setOf("Neel K.", "Pasquale S.", "Lord G."), sought = "Neel K.", duplicates = setOf())
     }
-})
 
-class TimeGeneratorTest : StringSpec({
-    "Randomly generated times must look real" {
-        repeat(100) { getRandomTime() shouldMatch Regex("""\d\d:\d\d [AP]M""") }
+    "Strings containing the same terms shouldn't be removed when there are no duplicates" {
+        test(set, sought = "Gil Amelio", duplicates = setOf())
     }
 })

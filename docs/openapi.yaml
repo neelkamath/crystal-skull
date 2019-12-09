@@ -1,6 +1,6 @@
 openapi: 3.0.2
 info:
-  title: Crystal Skull API
+  title: Crystal Skull
   version: '0'
   description: |
     Generates an entire quiz in English with just a topic name, or even nothing at all for a random one. You can also
@@ -15,276 +15,358 @@ info:
     name: MIT
     url: https://opensource.org/licenses/MIT
 servers:
-  - url: https://crystal-skull.herokuapp.com
-    description: This is a temporary development server which may be offline or serving a different API in the future.
+  - url: http://localhost:80
+    description: You'll have to host the service yourself.
 paths:
   /search:
     get:
       tags: [search]
-      description: Searches for topics to generate a quiz on
+      description: Searches for topics to generate a quiz on.
       operationId: searchTopics
       parameters:
-        - name: query
-          in: query
-          description: Topics to search for
-          required: true
-          schema:
-            type: string
-            example: appl
+        - $ref: '#/components/parameters/TopicQuery'
       responses:
-        200:
-          $ref: '#/components/responses/SearchResponse'
+        '200':
+          $ref: '#/components/responses/SearchResults'
   /search_trending:
     get:
       tags: [search]
-      description: Searches for topics trending in the last day to generate a quiz on
+      description: Searches for topics trending locally and internationally in the last day to generate a quiz on.
       operationId: searchTrendingTopics
       parameters:
-        - name: max
-          in: query
-          description: Maximum number of topics to retrieve
-          schema:
-            type: number
-            default: 5
-            example: 3
+        - $ref: '#/components/parameters/TrendingTopicQuery'
       responses:
-        200:
-          $ref: '#/components/responses/SearchResponse'
+        '200':
+          $ref: '#/components/responses/SearchResults'
   /quiz:
     post:
       tags: [quiz]
       description: Generate a quiz containing fill-in-the-blank questions on a topic or off of the supplied text.
       operationId: generateQuiz
       requestBody:
-        description: Configures how the quiz will be generated
-        content:
-          application/json:
-            examples:
-              topic:
-                summary: Generating a quiz for a topic
-                value:
-                  topic: Apple Inc.
-                  types:
-                    - date
-                    - organization
-                    - person
-              text:
-                summary: Generating a quiz off of supplied text
-                value:
-                  text:
-                    - Bill Gates was born in Seattle. His father was a lawyer.
-                    - The trade name "Microsoft" was registered on November 26, 1976. Microsoft launched its first
-                      retail version of Windows in 1985.
-            schema:
-              type: object
-              properties:
-                topic:
-                  description: |
-                    Generate a quiz for this topic. You must get the topic name by performing an HTTP GET request to the
-                    `/search` endpoint.
-
-                    If this key is sent, don't send the `"text"` key. If both the `"topic"` and `"text"` keys aren't
-                    sent, a random topic will be chosen. The random topic will be a popular topic from the previous day.
-                  type: string
-                text:
-                  description: |
-                    Generate a quiz off of this text. You can enhance the accuray of the generated questions by
-                    splitting the text into its respective subtopics. For example, if the text is on the topic of Bill
-                    Gates, you can split it into multiple `string`s such as for "Early Life", "Career", etc.
-
-                    If this key is sent, don't send the `"topic"` key.
-                  type: array
-                  items:
-                    type: string
-                types:
-                  description:
-                    These are the types of questions generated. The possible values are `"date"`, `"location"`,
-                    `"money"`, `"organization"`, `"percentage"`, `"person"`, and `"time"`.
-                  default: [date, location, organization, person]
-                  minItems: 1
-                  type: array
-                  items:
-                    type: string
-                max:
-                  description:
-                    The maximum number of questions to return. Quizzes may contain hundreds of questions. If you only
-                    need a certain number, specifying a maximum number to send back will reduce the download size.
-                  type: integer
-                  minimum: 0
-                allowSansYears:
-                  description:
-                    Questions on dates may contain options lacking years (e.g., `June 7` instead of `June 7, 2000`).
-                    Since such questions may be unnecessarily difficult and/or irrelevant to a person's study, options
-                    lacking years are disallowed by default.
-                  type: boolean
-                  default: false
-                duplicateAnswers:
-                  description:
-                    This states whether the quiz may include more than one question having the same answer. For example,
-                    one question may be `Apple Computer Company was founded by Steve Jobs.`, and another would be `Apple
-                    purchased NeXT for its NeXTSTEP operating system and to bring Steve Jobs back.`. Although both the
-                    questions are different (and would have different options), both their answers are `Steve Jobs`.
-                  type: boolean
-                  default: false
-                duplicateSentences:
-                  default: false
-                  description:
-                    This states whether to include multiple questions from the same sentence. Take the sentence `Apple
-                    was founded by Steve Jobs in April 1976.` for example. Two questions may be generated from this, one
-                    being `Apple was founded by Steve Jobs in April 1976.` (where the answer is `Steve Jobs`), and
-                    another might be `Apple was founded by Steve Jobs in April 1976.` (where the answer is `April
-                    1976`). Although the questions and answers (and hence, options) are different, they are based on the
-                    same sentence. This has the potential of making the quiz slightly boring, or having certain
-                    questions too easy since the user already knows the answer to the next duplicate sentence because
-                    they have read the rest of the same sentence in a previous question.
-                  type: boolean
+        $ref: '#/components/requestBodies/Quiz'
       responses:
-        200:
-          description: Generated quiz
-          content:
-            application/json:
-              examples:
-                topic:
-                  summary: Quiz on a topic
-                  value:
-                    quiz:
-                      - question: In 1996, Spindler was replaced by Gil Amelio as CEO.
-                        options: [Steve Jobs, Gil Amelio, Steve Wozniak, Ronald Wayne]
-                        answerOffset:
-                          start: 34
-                          end: 44
-                        type: person
-                    metadata:
-                      topic: Apple Inc.
-                      url: https://en.wikipedia.org/wiki/Apple_Inc.
-                    related: [Pixar]
-                text:
-                  summary: Quiz for supplied text
-                  value:
-                    quiz:
-                      - question: Microsoft launched its first retail version of Windows in 1985.
-                        context: The trade name "Microsoft" was registered on November 26, 1976.
-                        options:
-                          - June 12, 1956
-                          - November 26, 1976
-                          - 1985, September 27
-                          - '1967'
-                        answerOffset:
-                          start: 58
-                          end: 62
-                        type: date
-                    related: [Microsoft]
-              schema:
-                type: object
-                properties:
-                  quiz:
-                    type: array
-                    items:
-                      type: object
-                      properties:
-                        question:
-                          type: string
-                        context:
-                          description:
-                            Occasionally, the question is insufficient for the user to understand what is being asked.
-                            For example, the question `This slump caused the company to collapse in 1997.` is impossible
-                            to understand. For this reason, this field will contain the sentence present prior to the
-                            question. If the question is the first sentence in its passage, then this field will be
-                            `null` (a context isn't required in such cases anyway).
-                          type: string
-                          nullable: true
-                        options:
-                          description: Possible answers
-                          type: array
-                          items:
-                            type: string
-                          minItems: 4
-                          maxItems: 4
-                        answerOffset:
-                          description: The character offsets of the correct option
-                          type: object
-                          properties:
-                            start:
-                              type: integer
-                              description: Starting offset
-                            end:
-                              type: integer
-                              description: Ending offset
-                          required: [start, end]
-                        type:
-                          description: Type of question
-                          type: string
-                          enum: [date, location, money, organization, percentage, person, time]
-                      required: [question, answerOffset, options, type]
-                  metadata:
-                    description: This will be present if the quiz was generated for a topic, but not for supplied text.
-                    type: object
-                    properties:
-                      topic:
-                        description: This was the topic used to generate the quiz.
-                        type: string
-                      url:
-                        description: This is the URL of the Wikipedia page used to generate the quiz.
-                        type: string
-                  related:
-                    type: array
-                    items:
-                      type: string
-                    description: Quizzes can be generated for these related topics.
-                required: [quiz]
-        400:
-          description: Invalid payload
-          content:
-            text/plain; charset=utf-8:
-              example: Both <topic> and <text> cannot be non-null
+        '200':
+          $ref: '#/components/responses/Quiz'
   /health_check:
     get:
       tags: [status]
       description: Check if all systems are operational
       operationId: healthCheck
       responses:
-        204:
-          description: All systems are operational
+        '200':
+          $ref: '#/components/responses/Status'
 components:
+  schemas:
+    QuizRequest:
+      type: object
+      properties:
+        topic:
+          description: |
+            Generate a quiz for this topic. You must get the topic name by performing an HTTP GET request to the
+            `/search` endpoint.
+
+            If this key is sent, don't send the `"text"` key. If both the `"topic"` and `"text"` keys are not
+            sent, a random topic will be chosen. The random topic will be a popular topic from the previous day.
+          type: string
+        text:
+          description: |
+            Generate a quiz off of this text. You can enhance the accuray of the generated questions by
+            splitting the text into its respective subtopics. For example, if the text is on the topic of Bill
+            Gates, you can split it into multiple `string`s such as for "Early Life", "Career", etc.
+
+            If this key is sent, don't send the `"topic"` key.
+          type: array
+          items:
+            type: string
+        max:
+          description:
+            The maximum number of questions to return. Quizzes may contain hundreds of questions. If you only
+            need a certain number, specifying a maximum number to send back will reduce the download size.
+          type: integer
+          minimum: 0
+        allow_sans_years:
+          description:
+            Questions on dates may contain options lacking years (e.g., `June 7` instead of `June 7, 2000`).
+            Since such questions may be unnecessarily difficult and/or irrelevant to a person's study, options
+            lacking years are disallowed by default.
+          type: boolean
+          default: false
+        duplicate_answers:
+          description:
+            This states whether the quiz may include more than one question having the same answer. For example,
+            one question may be `Apple Computer Company was founded by Steve Jobs.`, and another would be `Apple
+            purchased NeXT for its NeXTSTEP operating system and to bring Steve Jobs back.`. Although both the
+            questions are different (and would have different options), both their answers are `Steve Jobs`.
+          type: boolean
+          default: false
+        duplicate_sentences:
+          default: false
+          description:
+            This states whether to include multiple questions from the same sentence. Take the sentence `Apple
+            was founded by Steve Jobs in April 1976.` for example. Two questions may be generated from this, one
+            being `Apple was founded by Steve Jobs in April 1976.` (where the answer is `Steve Jobs`), and
+            another might be `Apple was founded by Steve Jobs in April 1976.` (where the answer is `April
+            1976`). Although the questions and answers (and hence, options) are different, they are based on the
+            same sentence. This has the potential of making the quiz slightly boring, or having certain
+            questions too easy since the user already knows the answer to the next duplicate sentence because
+            they have read the rest of the same sentence in a previous question.
+          type: boolean
+    Quiz:
+      type: object
+      properties:
+        quiz:
+          type: array
+          items:
+            type: object
+            properties:
+              question:
+                type: string
+              context:
+                description:
+                  Occasionally, the question is insufficient for the user to understand what is being asked.
+                  For example, the question `This slump caused the company to collapse in 1997.` is impossible
+                  to understand. For this reason, this field will contain the sentence present prior to the
+                  question. If the question is the first sentence in its passage, then this field will be
+                  `null` (a context isn't required in such cases anyway).
+                type: string
+                nullable: true
+              options:
+                description: Possible answers
+                type: array
+                items:
+                  type: string
+                minItems: 4
+                maxItems: 4
+              answer_offset:
+                description: The character offsets of the correct option in the `question`.
+                type: object
+                properties:
+                  start:
+                    type: integer
+                    description: Starting offset
+                  end:
+                    type: integer
+                    description: Ending offset
+                required: [start, end]
+              answer:
+                description: The `string` in the `question` marked by `answer_offset`
+                type: string
+              label:
+                description: |
+                  Type of question
+
+                  `"person"`: People, including fictional.
+
+                  `"norp"`: Nationalities or religious or political groups.
+
+                  `"fac"`: Buildings, airports, highways, bridges, etc.
+
+                  `"org"`: Companies, agencies, institutions, etc.
+
+                  `"gpe"`: Countries, cities, states.
+
+                  `"loc"`: Non-GPE locations, mountain ranges, bodies of water.
+
+                  `"product"`: Objects, vehicles, foods, etc. (Not services.)
+
+                  `"event"`: Named hurricanes, battles, wars, sports events, etc.
+
+                  `"work_of_art"`: Titles of books, songs, etc.
+
+                  `"law"`: Named documents made into laws.
+
+                  `"language"`: Any named language.
+
+                  `"date"`: Absolute or relative dates or periods.
+
+                  `"time"`: Times smaller than a day.
+
+                  `"percent"`: Percent
+
+                  `"money"`: Monetary values, including unit.
+
+                  `"quantity"`: Measurements, as of weight or distance.
+
+                  `"ordinal"`: “first”, “second”, etc.
+
+                  `"cardinal"`: Numerals that do not fall under another type.
+                type: string
+                enum:
+                  - norp
+                  - fac
+                  - org
+                  - gpe
+                  - loc
+                  - product
+                  - event
+                  - work_of_art
+                  - law
+                  - language
+                  - date
+                  - time
+                  - percent
+                  - money
+                  - quantity
+                  - ordinal
+                  - cardinal
+            required: [question, answer_offset, answer, options, type]
+        metadata:
+          description: This will be present if the quiz was generated for a topic, but not for supplied text.
+          type: object
+          properties:
+            topic:
+              description: This was the topic used to generate the quiz.
+              type: string
+            url:
+              description: This is the URL of the Wikipedia page used to generate the quiz.
+              type: string
+        related:
+          type: array
+          items:
+            type: string
+          description: Quizzes can be generated for these related topics.
+      required: [quiz]
+    TopicQuery:
+      type: string
+      example: appl
+    TrendingTopic:
+      type: number
+      default: 5
+      example: 3
+    Query:
+      example:
+        topics:
+          - topic: Apple
+            description:
+              An apple is a sweet, edible fruit produced by an apple tree (Malus domestica). Apple trees are
+              cultivated worldwide and are the most widely grown species in the genus Malus.
+          - topic: Apple Inc.
+            description:
+              Apple Inc. is an American multinational technology company headquartered in Cupertino,
+              California, that designs, develops, and sells consumer electronics, computer software, and
+              online services.
+      type: object
+      properties:
+        topics:
+          type: array
+          items:
+            type: object
+            properties:
+              topic:
+                description: Topic name
+                type: string
+                example: Apple Inc.
+              description:
+                description: Topic description
+                type: string
+                example:
+                  Apple Inc. is an American multinational technology company headquartered in Cupertino,
+                  California, that designs, develops, and sells consumer electronics, computer software, and
+                  online services.
+            required: [topic, description]
+      required: [topics]
   responses:
-    SearchResponse:
+    SearchResults:
       description: Topic names and descriptions
       content:
         application/json:
           schema:
-            example:
-              topics:
-                - topic: Apple
-                  description:
-                    An apple is a sweet, edible fruit produced by an apple tree (Malus domestica). Apple trees are
-                    cultivated worldwide and are the most widely grown species in the genus Malus.
-                - topic: Apple Inc.
-                  description:
-                    Apple Inc. is an American multinational technology company headquartered in Cupertino,
-                    California, that designs, develops, and sells consumer electronics, computer software, and
-                    online services.
-            type: object
-            properties:
-              topics:
-                type: array
-                items:
-                  type: object
-                  properties:
-                    topic:
-                      description: Topic name
-                      type: string
-                      example: Apple Inc.
-                    description:
-                      description: Topic description
-                      type: string
-                      example:
-                        Apple Inc. is an American multinational technology company headquartered in Cupertino,
-                        California, that designs, develops, and sells consumer electronics, computer software, and
-                        online services.
-                  required: [topic, description]
-            required: [topics]
+            $ref: '#/components/schemas/Query'
       links:
         quiz:
-          operationId: generateQuiz
-          requestBody: $response.body#/topics/0/topic
-          description: Generate a quiz on this topic
+          $ref: '#/components/links/Quiz'
+    Quiz:
+      description: Generated quiz
+      content:
+        application/json:
+          examples:
+            topic:
+              summary: Quiz on a topic
+              value:
+                quiz:
+                  - question: In 1996, Spindler was replaced by Gil Amelio as CEO.
+                    options: [Steve Jobs, Gil Amelio, Steve Wozniak, Ronald Wayne]
+                    answer_offset:
+                      start: 34
+                      end: 44
+                    answer: Gil Amelio
+                    label: person
+                metadata:
+                  topic: Apple Inc.
+                  url: https://en.wikipedia.org/wiki/Apple_Inc.
+                related: [Pixar]
+            text:
+              summary: Quiz for supplied text
+              value:
+                quiz:
+                  - question: Microsoft launched its first retail version of Windows in 1985.
+                    context: The trade name "Microsoft" was registered on November 26, 1976.
+                    options:
+                      - June 12, 1956
+                      - November 26, 1976
+                      - 1985, September 27
+                      - '1985'
+                    answer_offset:
+                      start: 58
+                      end: 62
+                    answer: '1985'
+                    label: date
+                related: [Microsoft]
+          schema:
+            $ref: '#/components/schemas/Quiz'
+    Status:
+      description: All systems are operational
+      content:
+        application/json:
+          example:
+            quiz: true
+            nlp: true
+          schema:
+            type: object
+            properties:
+              quiz:
+                type: boolean
+                description: Whether the quiz generator is operational
+              nlp:
+                type: boolean
+                description: Whether the NLP service is operational
+            required: [quiz, nlp]
+  parameters:
+    TopicQuery:
+      name: query
+      in: query
+      description: Topics to search for
+      required: true
+      schema:
+        $ref: '#/components/schemas/TopicQuery'
+    TrendingTopicQuery:
+      name: max
+      in: query
+      description: Maximum number of topics to retrieve
+      schema:
+        $ref: '#/components/schemas/TrendingTopic'
+  requestBodies:
+    Quiz:
+      description: Configures how the quiz will be generated
+      content:
+        application/json:
+          examples:
+            topic:
+              summary: Generating a quiz for a topic
+              value:
+                topic: Apple Inc.
+            text:
+              summary: Generating a quiz off of supplied text
+              value:
+                text:
+                  - Bill Gates was born in Seattle. His father was a lawyer.
+                  - The trade name "Microsoft" was registered on November 26, 1976. Microsoft launched its first
+                    retail version of Windows in 1985.
+          schema:
+            $ref: '#/components/schemas/QuizRequest'
+  links:
+    Quiz:
+      operationId: generateQuiz
+      requestBody: $response.body#/topics/0/topic
+      description: Generate a quiz on this topic
