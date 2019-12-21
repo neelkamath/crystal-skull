@@ -2,7 +2,7 @@ version: '3.7'
 services:
   quiz:
     image: gradle:6.0.1-jdk8
-    command: gradle --no-daemon -t installDist & gradle --no-daemon run
+    command: sh -c 'gradle --no-daemon -t installDist & gradle --no-daemon run'
     # The directory must be named "crystal-skull" because automatic reload watches a directory by that name.
     # The directory must be nested (i.e., "/crystal-skull" will not work).
     working_dir: /home/gradle/crystal-skull
