@@ -1,14 +1,16 @@
 version: '3.7'
 services:
   nlp:
-    image: neelkamath/spacy-server:v1
+    image: neelkamath/spacy-server:2-en_core_web_sm-sense2vec
     networks: [backend]
+    hostname: nlp
   quiz:
+    entrypoint: bash wait-for-it.sh -t 0 nlp:8000 --
     depends_on: [nlp]
-    ports: ['80:80']
     networks: [backend]
+    ports: ['80:80']
     environment:
-      SPACY_SERVER_URL: http://nlp:8080
+      SPACY_SERVER_URL: http://nlp:8000
 networks:
   backend:
     driver: bridge

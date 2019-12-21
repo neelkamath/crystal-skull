@@ -27,20 +27,15 @@ class QuizmasterTest : StringSpec({
     "Questions should be created from processed sections" {
         val sentence = "Bill Gates and Steve Jobs were born in the 1900s."
         val context = ProcessedContext(sentence)
-        val quiz = Quizmaster().quiz(
-            listOf(
-                listOf(ProcessedSentence(context, Label.PERSON, names = listOf("Bill Gates", "Steve Jobs"))),
-                listOf(ProcessedSentence(context, Label.DATE, names = listOf("1900s")))
-            )
-        )
+        val sentence1 = ProcessedSentence(context, Label.PERSON, names = listOf("Bill Gates", "Steve Jobs"))
+        val sentence2 = ProcessedSentence(context, Label.DATE, names = listOf("1900s"))
+        val quiz = Quizmaster().quiz(listOf(listOf(sentence1), listOf(sentence2)))
         quiz.flatMap { entry ->
             entry.value.map { it.question }
         }.forEach { it shouldBe sentence }
         quiz.map { it.key.context.previous }.forEach { it.shouldBeNull() }
-        testPersonQuiz(
-            quiz.getValue(ProcessedSentence(context, Label.PERSON, names = listOf("Bill Gates", "Steve Jobs")))
-        )
-        testDateQuestion(quiz.getValue(ProcessedSentence(context, Label.DATE, names = listOf("1900s")))[0])
+        testPersonQuiz(quiz.getValue(sentence1))
+        testDateQuestion(quiz.getValue(sentence2)[0])
     }
 })
 

@@ -16,7 +16,7 @@ info:
     url: https://opensource.org/licenses/MIT
 servers:
   - url: http://localhost:80
-    description: You'll have to host the service yourself.
+    description: You'll have to set up the server yourself.
 paths:
   /search:
     get:
@@ -225,7 +225,8 @@ components:
           type: array
           items:
             type: string
-          description: Quizzes can be generated for these related topics.
+          description: Quizzes can be generated for these related topics. Topics are sorted in descending order of
+            relevance.
       required: [quiz]
     TopicQuery:
       type: string

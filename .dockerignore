@@ -3,3 +3,4 @@
 !build.gradle.kts
 !gradle.properties
 !settings.gradle.kts
+!wait-for-it.sh
