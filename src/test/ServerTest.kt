@@ -180,14 +180,14 @@ class QuizTest : StringSpec({
     }
 
     "Options should only be taken from the section the question is from unless more are required" {
-        val name1 = "Nikola Tesla"
-        val name2 = "Albert Einstein"
-        val name3 = "Christopher Robbin"
+        val name1 = "Tesla"
+        val name2 = "Einstein"
+        val name3 = "Edison"
         val sentence1 = "$name1 is first."
         val sentence2 = "$name2 is second."
         val sentence3 = "$name3 is third."
         val section = "$sentence1 $sentence2 $sentence3"
-        quiz(
+        val options = quiz(
             QuizRequest(
                 text = listOf(
                     "Bill Gates was born on October 28, 1955.",
@@ -195,7 +195,8 @@ class QuizTest : StringSpec({
                     "Galileo Galilei is fourth. Narendra Modi is fifth. Steve Jobs is sixth."
                 )
             )
-        ).quiz.filter { it.question == sentence1 }[0].options shouldContainAll listOf(name1, name2, name3)
+        ).quiz.filter { it.question == sentence1 }[0].options
+        withClue("Options: $options") { options shouldContainAll listOf(name1, name2, name3) }
     }
 })
 
@@ -207,7 +208,7 @@ class HealthCheckTest : StringSpec({
 private object Server {
     private val service = Retrofit.Builder()
         .baseUrl(System.getenv("CRYSTAL_SKULL_URL"))
-        .client(OkHttpClient.Builder().readTimeout(2, TimeUnit.MINUTES).build())
+        .client(OkHttpClient.Builder().readTimeout(4, TimeUnit.MINUTES).build())
         .addConverterFactory(GsonConverterFactory.create(gson))
         .build()
         .create(QuizService::class.java)

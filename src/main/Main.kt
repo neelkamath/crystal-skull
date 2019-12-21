@@ -3,7 +3,6 @@ package com.neelkamath.crystalskull
 import com.google.gson.FieldNamingPolicy
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
-import com.neelkamath.crystalskull.NLP.isHealthy
 import com.neelkamath.kwikipedia.getPage
 import com.neelkamath.kwikipedia.search
 import com.neelkamath.kwikipedia.searchMostViewed
@@ -39,7 +38,7 @@ fun Application.main() {
             call.respond(SearchResponse(results.map { Topic(it.title, it.description) }))
         }
         post("quiz") { quiz(this) }
-        get("health_check") { call.respond(HealthCheck(quiz = true, nlp = isHealthy())) }
+        get("health_check") { call.respond(HealthCheck(nlp = NLP.isHealthy())) }
     }
 }
 

@@ -2,15 +2,12 @@
 
 ## Server
 
-### Development
+### Developing
 
-```
-docker-compose up --build
-```
-
-The server will be running at `http://localhost:80`, and has automatic reload enabled (i.e., the command needn't be run again when the code in `src/main` has been updated).
-
-### [Testing](server_testing.md)
+The server will be running at `http://localhost:80` and has automatic reload enabled. A bind mount is used to connect the project directory to Docker. Test reports are saved to `build/reports/tests/test/`.
+1. `docker-compose run test`
+1. Test any time you want (e.g., `gradle test`).
+1. Once you're done, exit the environment by running `exit`.
 
 ### Production
 
@@ -29,7 +26,7 @@ Use the [`components`](https://swagger.io/specification/#componentsObject) objec
 ### Testing
 
 ```
-spectral lint docs/openapi.yaml
+npx @stoplight/spectral lint docs/openapi.yaml
 ```
 
 ## Documentation
@@ -37,7 +34,7 @@ spectral lint docs/openapi.yaml
 ### Developing
 
 ```
-redoc-cli serve docs/openapi.yaml -w
+npx redoc-cli serve docs/openapi.yaml -w
 ```
 
 The documentation will be served on `http://localhost:80`. It will automatically rebuild when `docs/openapi.yaml` is updated. Refresh the page to view the updated version.
@@ -45,7 +42,7 @@ The documentation will be served on `http://localhost:80`. It will automatically
 ### Production
 
 ```
-redoc-cli bundle docs/openapi.yaml -o public/index.html --title 'Crystal Skull'
+npx redoc-cli bundle docs/openapi.yaml -o public/index.html --title 'Crystal Skull'
 ```
 
 The documentation will be saved to `public/index.html`.

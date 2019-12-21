@@ -2,12 +2,10 @@ version: '3.7'
 services:
   quiz:
     image: gradle:6.0.1-jdk8
-    command: sh -c 'gradle --no-daemon -t installDist & gradle --no-daemon run'
-
+    command: gradle --no-daemon -t installDist & gradle --no-daemon run
     # The directory must be named "crystal-skull" because automatic reload watches a directory by that name.
     # The directory must be nested (i.e., "/crystal-skull" will not work).
     working_dir: /home/gradle/crystal-skull
-
     volumes:
       - type: bind
         source: .
@@ -16,5 +14,27 @@ services:
       - type: volume
         source: gradle-cache
         target: /home/gradle/.gradle
+  test:
+    image: gradle:6.0.1-jdk8
+    entrypoint: bash wait-for-it.sh -t 0 quiz:80 --
+    command: bash
+    volumes:
+      - type: bind
+        source: .
+        target: /home/gradle
+      - type: volume
+        source: gradle-cache-test
+        target: /home/gradle/.gradle
+      - type: bind
+        source: ./build/reports/tests
+        target: /project/build/reports/tests
+    depends_on: [quiz]
+    networks: [backend]
+    environment:
+      CRYSTAL_SKULL_URL: http://quiz:80
+      SPACY_SERVER_URL: http://nlp:8000
 volumes:
   gradle-cache:
+  # The quiz and test services use the same Gradle dependencies. Since both services need to write to the Gradle cache
+  # directory, separate volumes must be used in order to prevent file lock exceptions.
+  gradle-cache-test:

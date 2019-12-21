@@ -1,7 +1,17 @@
 .gradle/
 .idea/
-build/
 public/
 out/
 .DS_Store
 redoc-static.html
+
+# Exclude the build directory, but not the test reports directory within it.
+!build/
+build/*
+!build/reports/
+build/reports/*
+!build/reports/tests/
+build/reports/tests/*
+!build/reports/tests/test/
+build/reports/tests/test/*
+!build/reports/tests/test/README.md

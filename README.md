@@ -8,21 +8,13 @@ The name _Crystal Skull_ comes from the movie _[Indiana Jones and the Kingdom of
 
 ## Installation
 
-### Server
-
 Install [Docker](https://hub.docker.com/search/?type=edition&offering=community).
 
-To serve at `http://localhost:80`, run `docker run --rm -p 80:80 neelkamath/crytal-skull`.
+You may optionally generate a wrapper for the HTTP API using [OpenAPI Generator](https://openapi-generator.tech/) on the file [`https://raw.githubusercontent.com/neelkamath/crystal-skull/master/docs/openapi.yaml`](https://raw.githubusercontent.com/neelkamath/crystal-skull/master/docs/openapi.yaml).
 
-You can find specific versions on the [Docker Hub page](https://hub.docker.com/r/neelkamath/crystal-skull/tags).
+## Usage
 
-The container `EXPOSE`s port `80`.
-
-### Generating an SDK
-
-You can generate a wrapper for the HTTP API using [OpenAPI Generator](https://openapi-generator.tech/) on the file [`https://raw.githubusercontent.com/neelkamath/crystal-skull/master/docs/openapi.yaml`](https://raw.githubusercontent.com/neelkamath/crystal-skull/master/docs/openapi.yaml).
-
-## [Usage](https://neelkamath.gitlab.io/crystal-skull/)
+Since the API is currently unstable, you'll have to read the [developer docs](docs/CONTRIBUTING.md) in order to set it up so that you can try it out. Once the API is stable, it'll be available on Docker Hub. You can view the HTTP API docs [here](https://neelkamath.gitlab.io/crystal-skull/).
 
 ## [Contributing](docs/CONTRIBUTING.md)
 

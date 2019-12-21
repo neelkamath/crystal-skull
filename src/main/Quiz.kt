@@ -34,7 +34,7 @@ class Quizmaster(private val allowSansYears: Boolean = false) {
             }
         }
 
-    /** The [index] indicates which [options] are more relevant to the [sentence]. */
+    /** The [index] indicates which value's index in the [options] are more relevant to the [sentence]. */
     private fun createQuestions(
         sentence: ProcessedSentence,
         options: Map<Label, List<List<String>>>,
@@ -58,7 +58,7 @@ class Quizmaster(private val allowSansYears: Boolean = false) {
         with(processedSentence) {
             QuizQuestion(
                 context.sentence,
-                getOptions(label, correctOption),
+                getOptions(label, correctOption, processedSentence.context.sentence),
                 context.sentence.indexOf(correctOption.answer).let {
                     AnswerOffset(it, it + correctOption.answer.length)
                 },
@@ -67,18 +67,33 @@ class Quizmaster(private val allowSansYears: Boolean = false) {
             )
         }
 
-    /** Gives four options from the [correctOption]. [entity] options will be generated if required. */
-    private fun getOptions(entity: Label, correctOption: CorrectOption): Set<String> =
-        (correctOption.relevantOptions.shuffled().take(3) + correctOption.answer).let {
+    /**
+     * Gives four options using the [correctOption].
+     *
+     * If there aren't enough [CorrectOption.options], similar phrases will be computed using the [sentence] as context
+     * (e.g., if the answer is "Bill Gates", a generated option may be "Steve Jobs"). If there still aren't enough
+     * options, irrelevant options will be generated using the [entity] (e.g., if the answer is "200 BC", the generated
+     * option may be "May 2, 2019").
+     */
+    private fun getOptions(entity: Label, correctOption: CorrectOption, sentence: String): Set<String> =
+        (correctOption.relevantOptions.shuffled().take(3) + correctOption.answer).let { options ->
             val filter = { set: Set<String> -> filterOptions(set, correctOption.answer, entity).toMutableSet() }
-            var set = filter(it.toSet())
+            var set = filter(options.toSet())
             var failures = 0
             while (set.size < 4 && correctOption.options.isNotEmpty() && failures < 3) {
-                val size = set.size
+                val originalSize = set.size
                 set = filter(set.apply { add(correctOption.options.random()) })
-                if (set.size == size) failures++
+                if (set.size == originalSize) failures++
             }
-            while (set.size < 4) set = filter(set.apply { add(getRandomEntity(entity)) })
+            if (set.size < 4) {
+                val filteredAdd = { string: String ->
+                    set = filter(set.apply { add(string) })
+                }
+                if (set.size < 4)
+                    for (phrase in computeSimilarPhrases(sentence, correctOption.answer))
+                        if (set.size < 4) filteredAdd(phrase) else break
+                while (set.size < 4) filteredAdd(getRandomEntity(entity))
+            }
             set
         }.shuffled().toSet()
 

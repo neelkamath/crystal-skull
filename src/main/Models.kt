@@ -128,4 +128,4 @@ data class AnswerOffset(val start: Int, val end: Int) {
     }
 }
 
-data class HealthCheck(val quiz: Boolean, val nlp: Boolean)
+data class HealthCheck(val quiz: Boolean = true, val nlp: Boolean)
