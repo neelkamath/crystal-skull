@@ -25,9 +25,6 @@ services:
       - type: volume
         source: gradle-cache-test
         target: /home/gradle/.gradle
-      - type: bind
-        source: ./build/reports/tests
-        target: /project/build/reports/tests
     depends_on: [quiz]
     networks: [backend]
     environment:
