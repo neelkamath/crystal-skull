@@ -14,7 +14,7 @@ stages: [test, version, build, deploy]
 test-server:
   stage: test
   image: docker/compose
-  script: docker-compose run test gradle test
+  script: docker-compose run test gradle --no-daemon test
   artifacts:
     when: always
     paths: [build/reports/tests/test/]
