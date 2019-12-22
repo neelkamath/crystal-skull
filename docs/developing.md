@@ -5,14 +5,14 @@
 ### Developing
 
 The server will be running at `http://localhost:80` and has automatic reload enabled. A bind mount is used to connect the project directory to Docker. Test reports are saved to `build/reports/tests/test/`.
-1. `docker-compose run test`
+1. `docker-compose -f docker/docker-compose.yml -f docker/docker-compose.override.yml --project-directory . run test`
 1. Test any time you want (e.g., `gradle test`).
 1. Once you're done, exit the environment by running `exit`.
 
 ### Production
 
 ```
-docker-compose -f docker-compose.yml -f docker-compose.prod.yml up --build
+docker-compose --project-directory . -f docker/docker-compose.yml -f docker/docker-compose.prod.yml up --build
 ```
 
 The server will be running on `http://localhost:80`.

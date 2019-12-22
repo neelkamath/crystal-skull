@@ -9,13 +9,9 @@ import com.neelkamath.crystalskull.test.Server.requestQuiz
 import com.neelkamath.crystalskull.test.Server.requestSearch
 import com.neelkamath.crystalskull.test.Server.requestTrendingSearch
 import com.neelkamath.crystalskull.test.Server.searchTrending
-import io.kotlintest.matchers.collections.shouldBeEmpty
-import io.kotlintest.matchers.collections.shouldContainAll
-import io.kotlintest.matchers.collections.shouldHaveAtLeastSize
-import io.kotlintest.matchers.collections.shouldHaveSize
+import io.kotlintest.matchers.collections.*
 import io.kotlintest.matchers.numerics.shouldBeGreaterThan
 import io.kotlintest.matchers.numerics.shouldBeLessThanOrEqual
-import io.kotlintest.matchers.shouldBeInRange
 import io.kotlintest.matchers.types.shouldBeNull
 import io.kotlintest.matchers.types.shouldNotBeNull
 import io.kotlintest.matchers.withClue
@@ -51,13 +47,9 @@ class TrendingSearchTest : StringSpec({
 
     "A search response should have a status code of 200" { results.code() shouldBe 200 }
 
-    "At least 1 and at most 25 trending topics should be returned by default" {
-        results.body()!!.topics.size shouldBeInRange 1..25
-    }
+    "At most 25 trending topics should be returned by default" { results.body()!!.topics shouldHaveAtMostSize 25 }
 
-    "Requesting seven topics should beckon at least one and at most seven results" {
-        searchTrending(7).size shouldBeInRange 1..7
-    }
+    "Requesting seven topics should beckon at most seven results" { searchTrending(7) shouldHaveAtMostSize 7 }
 })
 
 // Tests for the `/quiz` endpoint.
