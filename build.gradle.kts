@@ -32,7 +32,7 @@ val test by tasks.getting(Test::class) { useJUnitPlatform() }
 
 kotlin.sourceSets {
     getByName("main").kotlin.srcDirs("src/main")
-    getByName("test").kotlin.srcDirs("src/test")
+    getByName("test").kotlin.srcDirs("src/test", "src/intTest")
 }
 
 tasks {
