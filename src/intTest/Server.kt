@@ -15,7 +15,7 @@ import java.util.concurrent.TimeUnit
 object Server {
     private val service = Retrofit.Builder()
         .baseUrl(System.getenv("CRYSTAL_SKULL_URL"))
-        .client(OkHttpClient.Builder().readTimeout(4, TimeUnit.MINUTES).build())
+        .client(OkHttpClient.Builder().readTimeout(10, TimeUnit.MINUTES).build())
         .addConverterFactory(GsonConverterFactory.create(gson))
         .build()
         .create(QuizService::class.java)
