@@ -1,20 +1,19 @@
-# This block is a workaround for dind: https://forum.gitlab.com/t/docker-dind-stops-working-after-12-1-0-update/28664/4.
-services:
+services: # See https://forum.gitlab.com/t/docker-dind-stops-working-after-12-1-0-update/28664/4.
   - name: docker:dind
-    entrypoint: ["env", "-u", "DOCKER_HOST"]
-    command: ["dockerd-entrypoint.sh"]
+    entrypoint: ['env', '-u', 'DOCKER_HOST']
+    command: ['dockerd-entrypoint.sh']
 variables:
   DOCKER_HOST: tcp://docker:2375/
   DOCKER_DRIVER: overlay2
-  # See https://github.com/docker-library/docker/pull/166
-  DOCKER_TLS_CERTDIR: ""
+  DOCKER_TLS_CERTDIR: '' # See https://github.com/docker-library/docker/pull/166.
 
-stages: [test, version, build, deploy]
+stages: [test, build, deploy]
 
 test-server:
   stage: test
   image: docker/compose
-  script: docker-compose run test gradle --no-daemon test
+  script: docker-compose -f docker/docker-compose.yml -f docker/docker-compose.override.yml --project-directory .
+    run test gradle --no-daemon test
   artifacts:
     when: always
     paths: [build/reports/tests/test/]
@@ -23,15 +22,6 @@ test-spec:
   stage: test
   image: node
   script: npx @stoplight/spectral lint docs/openapi.yaml
-
-save-version:
-  stage: version
-  script:
-    - version=$(./gradlew --no-daemon properties | grep version -m 1)
-    - 'echo v${version#*: } > version.txt'
-  artifacts:
-    paths: [version.txt]
-  only: [master]
 
 build-docs:
   stage: build
