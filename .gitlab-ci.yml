@@ -1,19 +1,15 @@
-# See https://forum.gitlab.com/t/docker-dind-stops-working-after-12-1-0-update/28664/4.
-services:
-  - name: docker:dind
-    entrypoint: ['env', '-u', 'DOCKER_HOST']
-    command: ['dockerd-entrypoint.sh']
-
-variables:
-  DOCKER_HOST: tcp://docker:2375/
-  DOCKER_DRIVER: overlay2
-  DOCKER_TLS_CERTDIR: '' # See https://github.com/docker-library/docker/pull/166.
-
 stages: [test, build, deploy]
 
 test-server:
   stage: test
-  image: docker/compose
+  services: # See https://forum.gitlab.com/t/docker-dind-stops-working-after-12-1-0-update/28664/4.
+    - name: docker:dind
+      entrypoint: ['env', '-u', 'DOCKER_HOST']
+      command: ['dockerd-entrypoint.sh']
+  variables:
+    DOCKER_HOST: tcp://docker:2375/
+    DOCKER_DRIVER: overlay2
+    DOCKER_TLS_CERTDIR: '' # See https://github.com/docker-library/docker/pull/166.
   script: docker-compose -f docker/docker-compose.yml -f docker/docker-compose.override.yml --project-directory .
     run test gradle --no-daemon test
   artifacts:
