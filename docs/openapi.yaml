@@ -31,7 +31,11 @@ paths:
   /search_trending:
     get:
       tags: [search]
-      description: Searches for topics trending locally and internationally in the last day to generate a quiz on.
+      description: |
+        Searches for topics trending locally and internationally in the last day to generate a quiz on.
+
+        Search results are returned from Wikipedia. It has been found that for random long periods of time, zero search
+        results are returned regardless of the input. Only this endpoint is affected (i.e., other searches work fine).
       operationId: searchTrendingTopics
       parameters:
         - $ref: '#/components/parameters/TrendingTopicQuery'
@@ -41,13 +45,21 @@ paths:
   /quiz:
     post:
       tags: [quiz]
-      description: Generate a quiz containing fill-in-the-blank questions on a topic or off of the supplied text.
+      description: |
+        Generate a quiz containing fill-in-the-blank questions on a topic or off of the supplied text.
+
+        Either send the `"topic"` or `"text"` key, but not both. If neither are provided, a popular topic from the
+        previous day will be chosen. The random topic is taken from Wikipedia's most popular pages the previous day. It
+        has been found that Wikipedia returns zero search results for trending topics for random long periods of time.
+        During such periods, a quiz will not generate due to the lack of a topic.
       operationId: generateQuiz
       requestBody:
         $ref: '#/components/requestBodies/Quiz'
       responses:
         '200':
           $ref: '#/components/responses/Quiz'
+        '404':
+          $ref: '#/components/responses/QuizUnavailable'
   /health_check:
     get:
       tags: [status]
@@ -65,17 +77,12 @@ components:
           description: |
             Generate a quiz for this topic. You must get the topic name by performing an HTTP GET request to the
             `/search` endpoint.
-
-            If this key is sent, don't send the `"text"` key. If both the `"topic"` and `"text"` keys are not
-            sent, a random topic will be chosen. The random topic will be a popular topic from the previous day.
           type: string
         text:
           description: |
             Generate a quiz off of this text. You can enhance the accuray of the generated questions by
             splitting the text into its respective subtopics. For example, if the text is on the topic of Bill
             Gates, you can split it into multiple `string`s such as for "Early Life", "Career", etc.
-
-            If this key is sent, don't send the `"topic"` key.
           type: array
           items:
             type: string
@@ -316,6 +323,14 @@ components:
                 related: [Microsoft]
           schema:
             $ref: '#/components/schemas/Quiz'
+    QuizUnavailable:
+      description: The quiz couldn't be generated because a random topic was not found. Random topics are unavailable
+        during long random periods of time due to a bug in Wikipedia which returns zero search results.
+      content:
+        text/plain; charset=utf-8:
+          example: Since you did not specify a topic or text to generate a quiz on, a random topic was to be used. A bug
+            in Wikipedia causes zero search results to be returned during random long periods of time. The bug is in
+            effect at this moment in time.
     Status:
       description: All systems are operational
       content:
