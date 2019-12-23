@@ -48,18 +48,17 @@ paths:
       description: |
         Generate a quiz containing fill-in-the-blank questions on a topic or off of the supplied text.
 
-        Either send the `"topic"` or `"text"` key, but not both. If neither are provided, a popular topic from the
-        previous day will be chosen. The random topic is taken from Wikipedia's most popular pages the previous day. It
-        has been found that Wikipedia returns zero search results for trending topics for random long periods of time.
-        During such periods, a quiz will not generate due to the lack of a topic.
+        You may send either the `"topic"` or the `"text"` key, but not both. If neither of them are provided, a popular
+        topic from the previous day will be chosen (e.g., if the movie Batman released recently, the movie will be taken
+        as the topic). The random topic is taken from Wikipedia's most popular pages the previous day. It has been found
+        that Wikipedia returns zero search results for trending topics for random long periods of time. During such
+        periods, a completely random (i.e., possibly boring and irrelevant) topic will be chosen instead.
       operationId: generateQuiz
       requestBody:
         $ref: '#/components/requestBodies/Quiz'
       responses:
         '200':
           $ref: '#/components/responses/Quiz'
-        '404':
-          $ref: '#/components/responses/QuizUnavailable'
   /health_check:
     get:
       tags: [status]
@@ -323,14 +322,6 @@ components:
                 related: [Microsoft]
           schema:
             $ref: '#/components/schemas/Quiz'
-    QuizUnavailable:
-      description: The quiz couldn't be generated because a random topic was not found. Random topics are unavailable
-        during long random periods of time due to a bug in Wikipedia which returns zero search results.
-      content:
-        text/plain; charset=utf-8:
-          example: Since you did not specify a topic or text to generate a quiz on, a random topic was to be used. A bug
-            in Wikipedia causes zero search results to be returned during random long periods of time. The bug is in
-            effect at this moment in time.
     Status:
       description: All systems are operational
       content:

@@ -51,7 +51,7 @@ private suspend fun quiz(context: PipelineContext<Unit, ApplicationCall>) = with
 private class QuizGenerator(private val request: QuizRequest) {
     /** Creates a quiz for a [QuizRequest.topic] (if `null`, a random topic will be chosen). */
     suspend fun quizTopic(): QuizResponse {
-        val topic = request.topic ?: searchMostViewed().random().title
+        val topic = request.topic ?: getRandomTopic()
         val page = getPage(topic)
         return QuizResponse(
             if (request.max != null && request.max == 0) listOf()
@@ -93,6 +93,15 @@ private class QuizGenerator(private val request: QuizRequest) {
             .shuffled()
             .let { it.take(request.max ?: it.size) }
 }
+
+/**
+ * Returns a random Wikipedia article's title (usually one which is trending in the last day).
+ *
+ * [searchMostViewed] occasionally returns zero search results for random long periods of time due to a Wikipedia bug.
+ * To ensure an article title is always returned, we fall back to [search]ing a completely random topic.
+ */
+private suspend fun getRandomTopic(): String =
+    searchMostViewed().let { if (it.isEmpty()) search()[0].title else it.random().title }
 
 private val relatedTopicLabels = listOf(
     Label.PERSON,
