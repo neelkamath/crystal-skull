@@ -15,7 +15,7 @@ repositories { jcenter() }
 dependencies {
     implementation(kotlin("stdlib-jdk8"))
     implementation("ch.qos.logback:logback-classic:1.2.3")
-    implementation("com.neelkamath.kwikipedia:kwikipedia:0.7.1")
+    implementation("com.neelkamath.kwikipedia:kwikipedia:0.7.2")
     implementation("com.github.javafaker:javafaker:1.0.1")
     val ktorVersion = "1.2.5"
     implementation("io.ktor:ktor-server-core:$ktorVersion")
