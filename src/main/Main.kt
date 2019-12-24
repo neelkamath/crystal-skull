@@ -8,7 +8,6 @@ import com.neelkamath.kwikipedia.search
 import com.neelkamath.kwikipedia.searchMostViewed
 import com.neelkamath.kwikipedia.searchTitle
 import io.ktor.application.Application
-import io.ktor.application.ApplicationCall
 import io.ktor.application.call
 import io.ktor.application.install
 import io.ktor.features.CallLogging
@@ -20,7 +19,6 @@ import io.ktor.response.respond
 import io.ktor.routing.Routing
 import io.ktor.routing.get
 import io.ktor.routing.post
-import io.ktor.util.pipeline.PipelineContext
 
 /** Shared Gson configuration for the entire project. */
 val gson: Gson = GsonBuilder().setFieldNamingPolicy(FieldNamingPolicy.LOWER_CASE_WITH_UNDERSCORES).create()
@@ -37,15 +35,12 @@ fun Application.main() {
             val results = searchMostViewed(call.request.queryParameters["max"]?.toInt() ?: 25)
             call.respond(SearchResponse(results.map { Topic(it.title, it.description) }))
         }
-        post("quiz") { quiz(this) }
+        post("quiz") {
+            val request = call.receive<QuizRequest>()
+            with(QuizGenerator(request)) { call.respond(if (request.text != null) quizText() else quizTopic()) }
+        }
         get("health_check") { call.respond(HealthCheck(nlp = NLP.isHealthy())) }
     }
-}
-
-/** Deals with HTTP POST requests to the `/quiz` endpoint. */
-private suspend fun quiz(context: PipelineContext<Unit, ApplicationCall>) = with(context) {
-    val request = call.receive<QuizRequest>()
-    with(QuizGenerator(request)) { call.respond(if (request.text != null) quizText() else quizTopic()) }
 }
 
 private class QuizGenerator(private val request: QuizRequest) {

@@ -1,6 +1,7 @@
 package com.neelkamath.crystalskull
 
 import com.neelkamath.crystalskull.NLP.recognizeNamedEntities
+import com.neelkamath.crystalskull.NLP.sense2vec
 import com.neelkamath.crystalskull.NLP.sentencize
 
 /** A section of text, such as one on the early life of Bill Gates. */
@@ -44,12 +45,8 @@ fun findNames(document: List<TokenizedSentence>): List<ProcessedSentence> {
  * For example, if the [sentence] was `"Bill Gates created Microsoft."` and the [entity] was `"Microsoft"`, the
  * computed phrases may be `"Apple"` and `"Google"`.
  */
-fun computeSimilarPhrases(sentence: String, entity: String): List<String> {
-    val entities = recognizeNamedEntities(listOf(sentence), useSense2vec = true)
-        .flatMap { it.entities }
-        .filter { it.text == entity }
-    return if (entities.isEmpty()) listOf() else entities[0].sense2vec.map { it.phrase }.let { cleanSense2vec(it) }
-}
+fun computeSimilarPhrases(sentence: String, entity: String): List<String> =
+    sense2vec(sentence, entity).map { it.phrase }.let { cleanSense2vec(it) }
 
 /** Removes dirty data from sense2vec output. */
 fun cleanSense2vec(phrases: List<String>): List<String> =

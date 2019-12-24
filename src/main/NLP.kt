@@ -34,6 +34,10 @@ object NLP {
 
     private data class NERResponse(val data: List<NamedEntity>)
 
+    private data class Sense2vecRequest(val sentence: String, val phrase: String)
+
+    private data class Sense2vecResponse(val sense2vec: List<SimilarPhrase>)
+
     /** The recognized named [entities] in the sentence's [text]. */
     data class NamedEntity(val entities: List<RecognizedEntity>, val text: String)
 
@@ -71,6 +75,9 @@ object NLP {
         @POST("ner")
         fun recognizeNamedEntities(@Body request: NERRequest): Call<NERResponse>
 
+        @POST("sense2vec")
+        fun sense2vec(@Body request: Sense2vecRequest): Call<Sense2vecResponse>
+
         @POST("tokenizer")
         fun tokenize(@Body request: TokenizerRequest): Call<TokenizerResponse>
 
@@ -83,6 +90,9 @@ object NLP {
 
     fun recognizeNamedEntities(strings: List<String>, useSense2vec: Boolean = false): List<NamedEntity> =
         service.recognizeNamedEntities(NERRequest(strings, useSense2vec)).execute().body()!!.data
+
+    fun sense2vec(sentence: String, phrase: String): List<SimilarPhrase> =
+        service.sense2vec(Sense2vecRequest(sentence, phrase)).execute().body()!!.sense2vec
 
     fun tokenize(text: String): List<String> =
         service.tokenize(TokenizerRequest(text)).execute().body()!!.tokens
