@@ -14,7 +14,7 @@ import java.util.concurrent.TimeUnit
 object NLP {
     private val service = Retrofit.Builder()
         .baseUrl(System.getenv("SPACY_SERVER_URL"))
-        .client(OkHttpClient.Builder().readTimeout(2, TimeUnit.MINUTES).build())
+        .client(OkHttpClient.Builder().readTimeout(5, TimeUnit.MINUTES).build())
         .addConverterFactory(GsonConverterFactory.create(gson))
         .build()
         .create(NLPService::class.java)
