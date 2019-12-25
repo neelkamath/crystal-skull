@@ -46,7 +46,7 @@ fun findNames(document: List<TokenizedSentence>): List<ProcessedSentence> {
  * computed phrases may be `"Apple"` and `"Google"`.
  */
 fun computeSimilarPhrases(sentence: String, entity: String): List<String> =
-    sense2vec(sentence, entity).map { it.phrase }.let { cleanSense2vec(it) }
+    cleanSense2vec(sense2vec(sentence, entity).map { it.phrase })
 
 /** Removes dirty data from sense2vec output. */
 fun cleanSense2vec(phrases: List<String>): List<String> =

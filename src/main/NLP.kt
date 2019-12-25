@@ -94,8 +94,7 @@ object NLP {
     fun sense2vec(sentence: String, phrase: String): List<SimilarPhrase> =
         service.sense2vec(Sense2vecRequest(sentence, phrase)).execute().body()!!.sense2vec
 
-    fun tokenize(text: String): List<String> =
-        service.tokenize(TokenizerRequest(text)).execute().body()!!.tokens
+    fun tokenize(text: String): List<String> = service.tokenize(TokenizerRequest(text)).execute().body()!!.tokens
 
     fun sentencize(data: String): List<String> =
         service.sentencize(SentencizerRequest(data)).execute().body()!!.sentences
