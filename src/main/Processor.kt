@@ -3,6 +3,9 @@ package com.neelkamath.crystalskull
 import com.neelkamath.crystalskull.NLP.recognizeNamedEntities
 import com.neelkamath.crystalskull.NLP.sense2vec
 import com.neelkamath.crystalskull.NLP.sentencize
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.coroutineScope
 
 /** A section of text, such as one on the early life of Bill Gates. */
 typealias ProcessedSection = List<ProcessedSentence>
@@ -17,18 +20,23 @@ data class ProcessedSentence(val context: ProcessedContext, val label: Label, va
 data class ProcessedContext(val sentence: String, val previous: String? = null)
 
 /** Tokenizes English [data]. */
-fun tokenize(data: String): List<TokenizedSentence> = sentencize(data).map { TokenizedSentence(it, NLP.tokenize(it)) }
+suspend fun tokenize(data: String): List<TokenizedSentence> = coroutineScope {
+    sentencize(data)
+        .map {
+            async { TokenizedSentence(it, NLP.tokenize(it)) }
+        }
+        .awaitAll()
+}
 
 /**
- * Uses NER on an English [document].
+ * Uses NER on English [sentences].
  *
  * The [ProcessedContext.previous] sentence from each returned [ProcessedSentence] is the sentence prior to each
- * [TokenizedSentence] in the [document]. So if you are using the [ProcessedContext.previous] sentence, you must only
- * pass semantically related contents in the [document] (e.g., a single paragraph). Otherwise, the first sentence from
- * the previous paragraph would be used as in the [ProcessedContext] even though it isn't contextual.
+ * sentence in the [sentences]. So if you are using the [ProcessedContext.previous] sentence, you must only pass
+ * semantically related contents in the [sentences] (e.g., a single paragraph). Otherwise, the first sentence from the
+ * previous paragraph would be used as in the [ProcessedContext] even though it isn't contextual.
  */
-fun findNames(document: List<TokenizedSentence>): List<ProcessedSentence> {
-    val sentences = document.map { it.sentence }
+fun findNames(sentences: List<String>): List<ProcessedSentence> {
     val data = recognizeNamedEntities(sentences)
     return data.map { namedEntity ->
         val sentence = namedEntity.text

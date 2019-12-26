@@ -19,6 +19,9 @@ import io.ktor.response.respond
 import io.ktor.routing.Routing
 import io.ktor.routing.get
 import io.ktor.routing.post
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.coroutineScope
 
 /** Shared Gson configuration for the entire project. */
 val gson: Gson = GsonBuilder().setFieldNamingPolicy(FieldNamingPolicy.LOWER_CASE_WITH_UNDERSCORES).create()
@@ -51,9 +54,11 @@ private class QuizGenerator(private val request: QuizRequest) {
         return QuizResponse(
             if (request.max != null && request.max == 0) listOf()
             else generateQuestions(
-                page
-                    .filterKeys { it !in listOf("See also", "References", "Further reading", "External links") }
-                    .map { processSection(it.value) }
+                processSections(
+                    page
+                        .filterKeys { it !in listOf("See also", "References", "Further reading", "External links") }
+                        .map { it.value }
+                )
             ),
             QuizMetadata(topic, searchTitle(topic).url),
             page["See also"]?.split("\n")
@@ -61,23 +66,31 @@ private class QuizGenerator(private val request: QuizRequest) {
     }
 
     /** Creates a [QuizResponse] for a non-null [QuizRequest.text]. */
-    fun quizText(): QuizResponse = QuizResponse(
-        if (request.max != null && request.max == 0) listOf()
-        else generateQuestions(request.text!!.map { processSection(it) }),
+    suspend fun quizText(): QuizResponse = QuizResponse(
+        if (request.max != null && request.max == 0) listOf() else generateQuestions(processSections(request.text!!)),
         related = findRelatedTopics(request.text!!)
     )
 
+    /** Asynchronously runs [processSection] on the [sections]. */
+    private suspend fun processSections(sections: List<String>): List<ProcessedSection> = coroutineScope {
+        sections
+            .map {
+                async { processSection(it) }
+            }
+            .awaitAll()
+    }
+
     /** Processes a [section] of text (e.g., the early life of Bill Gates). */
-    private fun processSection(section: String): List<ProcessedSentence> = findNames(tokenize(section))
-        .let { sentences ->
-            if (request.duplicateSentences) return@let sentences
+    private suspend fun processSection(section: String): List<ProcessedSentence> =
+        findNames(tokenize(section).map { it.sentence }).let { sentences ->
+            if (request.duplicateSentences) return sentences
             sentences.fold(mutableListOf()) { list, processed ->
                 if (processed.context.sentence !in list.map { it.context.sentence }) list.add(processed)
                 list
             }
         }
 
-    private fun generateQuestions(sections: List<ProcessedSection>): List<QuizQuestion> =
+    private suspend fun generateQuestions(sections: List<ProcessedSection>): List<QuizQuestion> =
         Quizmaster(request.allowSansYears).quiz(sections)
             .filterValues { it.isNotEmpty() }
             .flatMap { if (request.duplicateSentences) it.value else listOf(it.value.random()) }
@@ -87,44 +100,4 @@ private class QuizGenerator(private val request: QuizRequest) {
             }
             .shuffled()
             .let { it.take(request.max ?: it.size) }
-}
-
-/**
- * Returns a random Wikipedia article's title (usually one which is trending in the last day).
- *
- * [searchMostViewed] occasionally returns zero search results for random long periods of time due to a Wikipedia bug.
- * To ensure an article title is always returned, we fall back to [search]ing a completely random topic.
- */
-private suspend fun getRandomTopic(): String =
-    searchMostViewed().let { if (it.isEmpty()) search()[0].title else it.random().title }
-
-private val relatedTopicLabels = listOf(
-    Label.PERSON,
-    Label.NORP,
-    Label.FAC,
-    Label.ORG,
-    Label.GPE,
-    Label.LOC,
-    Label.PRODUCT,
-    Label.EVENT,
-    Label.WORK_OF_ART,
-    Label.LAW,
-    Label.LANGUAGE
-)
-
-/** Finds topics related to [sections] on Wikipedia (ordered with the most relevant first). */
-private fun findRelatedTopics(sections: List<String>): List<String> {
-    val entities = findNames(sections.flatMap { tokenize(it) })
-        .filter { it.label in relatedTopicLabels }
-        .flatMap { it.names }
-    return entities
-        .associateWith { entity ->
-            entities.count { it == entity }
-        }
-        .toList()
-        .sortedByDescending { it.second }
-        .map { it.first }
-        .filter { entity ->
-            search(entity).let { it.isNotEmpty() && it[0].title == entity }
-        }
 }

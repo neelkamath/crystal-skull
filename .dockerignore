@@ -1,6 +1,9 @@
 *
+!docker/wait-for-it.sh
+!docker/profile.sh
+!gradle/
 !src/main/
 !build.gradle.kts
 !gradle.properties
+!gradlew
 !settings.gradle.kts
-!wait-for-it.sh

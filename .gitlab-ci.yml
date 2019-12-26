@@ -13,7 +13,7 @@ test-server:
   stage: test
   image: docker/compose
   script: docker-compose -f docker/docker-compose.yml -f docker/docker-compose.override.yml --project-directory .
-    run test gradle --no-daemon test
+    run test ./gradlew --no-daemon test
   artifacts:
     when: always
     paths: [build/reports/tests/test/]

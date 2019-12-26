@@ -26,7 +26,7 @@ The quiz generator uses text from [Wikipedia](https://en.wikipedia.org/) which i
 
 Although he didn't convey how or what to do in any way, [Sundararaman](https://github.com/vsundar17697) showed me the idea of generating fill-in-the-blank questions using Wikipedia.
 
-The [`wait-for-it.sh`](wait-for-it.sh) script was taken from [vishnubob](https://github.com/vishnubob/wait-for-it).
+The [`wait-for-it.sh`](docker/wait-for-it.sh) script was taken from [vishnubob](https://github.com/vishnubob/wait-for-it).
 
 ## License
 

@@ -1,6 +1,9 @@
 package com.neelkamath.crystalskull.test
 
-import com.neelkamath.crystalskull.*
+import com.neelkamath.crystalskull.ProcessedSentence
+import com.neelkamath.crystalskull.cleanSense2vec
+import com.neelkamath.crystalskull.findNames
+import com.neelkamath.crystalskull.removeCaseInsensitiveDuplicates
 import io.kotlintest.matchers.types.shouldBeNull
 import io.kotlintest.matchers.types.shouldNotBeNull
 import io.kotlintest.matchers.withClue
@@ -9,12 +12,7 @@ import io.kotlintest.specs.StringSpec
 
 class NameFinderTest : StringSpec({
     val names = findNames(
-        listOf(
-            TokenizedSentence("My first name is John.", listOf("John")),
-            TokenizedSentence("My second name is Doe.", listOf("Doe")),
-            TokenizedSentence("This sentence has no tokens.", listOf()),
-            TokenizedSentence("My mom's name is Mary.", listOf("Mary"))
-        )
+        listOf("My first name is John.", "My second name is Doe.", "This has no tokens.", "My mom's name is Mary.")
     ).fold(mutableListOf<ProcessedSentence>()) { accumulator, name ->
         if (name.context.sentence in accumulator.map { it.context.sentence }) return@fold accumulator
         accumulator.apply { add(name) }
