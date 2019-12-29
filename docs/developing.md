@@ -8,7 +8,7 @@
 docker-compose -f docker/docker-compose.yml -f docker/docker-compose.override.yml --project-directory . run --rm test
 ```
 
-The server will be running at `http://localhost:80` and has automatic reload enabled. A bind mount is used to connect the project directory to the container so that you can run commands like `gradle test`. Test reports are saved to `build/reports/tests/test/`.
+The server will be running at `http://localhost:80` and has automatic reload enabled. A bind mount connects the project directory to the container so that you can run commands like `gradle test`. You can run `gradle dependencyUpdates` to view dependency updates. Test reports save to `build/reports/tests/test/`. `src/test` contains unit tests. `src/intTest` contains integration tests.
 
 ### Production
 
@@ -17,6 +17,20 @@ docker-compose --project-directory . -f docker/docker-compose.yml -f docker/dock
 ```
 
 The server will be running on `http://localhost:80`.
+
+### Profiling
+
+1. Run:
+    ```
+    docker-compose --project-directory . -f docker/docker-compose.yml -f docker/docker-compose.prod.yml \
+        run --rm -p 80:80 -p 9010:9010 quiz sh docker/profile.sh
+    ```
+1. Open VisualVM.
+1. Click **File**.
+1. Click **Add JMX Connection...**.
+1. Enter `localhost:9010` in **Connection:**.
+1. Click **OK**.
+1. Double click **localhost:9010 (pid PID)** (where `PID` is an integer) under **Local** in the **Applications** tab.
 
 ## Specification
 

@@ -1,6 +1,10 @@
 package com.neelkamath.crystalskull
 
 import com.github.javafaker.Faker
+import kotlinx.coroutines.Deferred
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.coroutineScope
 import java.time.Month
 import java.time.format.TextStyle
 import java.util.*
@@ -18,12 +22,18 @@ class Quizmaster(private val allowSansYears: Boolean = false) {
     }
 
     /** Creates [QuizQuestion]s out of [sections]. */
-    fun quiz(sections: List<ProcessedSection>): Map<ProcessedSentence, List<QuizQuestion>> {
-        val map = mutableMapOf<ProcessedSentence, List<QuizQuestion>>()
+    suspend fun quiz(sections: List<ProcessedSection>): Map<ProcessedSentence, List<QuizQuestion>> {
+        val map = mutableMapOf<ProcessedSentence, Deferred<List<QuizQuestion>>>()
         val options = createOptions(sections)
-        for ((index, section) in sections.withIndex())
-            map.putAll(section.associateWith { createQuestions(it, options, index) })
-        return map
+        coroutineScope {
+            for ((index, section) in sections.withIndex())
+                map.putAll(
+                    section.associateWith {
+                        async { createQuestions(it, options, index) }
+                    }
+                )
+        }
+        return map.mapValues { it.value.await() }
     }
 
     /** Map of options whose values are the entities found in each of the [sections]. */
@@ -35,23 +45,28 @@ class Quizmaster(private val allowSansYears: Boolean = false) {
         }
 
     /** The [index] indicates which value's index in the [options] are more relevant to the [sentence]. */
-    private fun createQuestions(
+    private suspend fun createQuestions(
         sentence: ProcessedSentence,
         options: Map<Label, List<List<String>>>,
         index: Int
-    ): List<QuizQuestion> = sentence.names
-        .filter { if (sentence.label == Label.DATE && !allowSansYears) it.containsYear() else true }
-        .map {
-            val possibleOptions = options.getValue(sentence.label)
-            question(
-                sentence,
-                CorrectOption(
-                    relevantOptions = possibleOptions[index].toSet(),
-                    options = (possibleOptions.flatten() - possibleOptions[index]).toSet(),
-                    answer = it
-                )
-            )
-        }
+    ): List<QuizQuestion> = coroutineScope {
+        sentence.names
+            .filter { if (sentence.label == Label.DATE && !allowSansYears) it.containsYear() else true }
+            .map {
+                val possibleOptions = options.getValue(sentence.label)
+                async {
+                    question(
+                        sentence,
+                        CorrectOption(
+                            relevantOptions = possibleOptions[index].toSet(),
+                            options = (possibleOptions.flatten() - possibleOptions[index]).toSet(),
+                            answer = it
+                        )
+                    )
+                }
+            }
+            .awaitAll()
+    }
 
     /** If there aren't enough [CorrectOption.options], fake options will be generated. */
     private fun question(processedSentence: ProcessedSentence, correctOption: CorrectOption): QuizQuestion =

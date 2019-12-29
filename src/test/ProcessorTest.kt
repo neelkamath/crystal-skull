@@ -1,6 +1,9 @@
 package com.neelkamath.crystalskull.test
 
-import com.neelkamath.crystalskull.*
+import com.neelkamath.crystalskull.ProcessedSentence
+import com.neelkamath.crystalskull.cleanSense2vec
+import com.neelkamath.crystalskull.findNames
+import com.neelkamath.crystalskull.removeCaseInsensitiveDuplicates
 import io.kotlintest.matchers.types.shouldBeNull
 import io.kotlintest.matchers.types.shouldNotBeNull
 import io.kotlintest.matchers.withClue
@@ -8,13 +11,9 @@ import io.kotlintest.shouldBe
 import io.kotlintest.specs.StringSpec
 
 class NameFinderTest : StringSpec({
+    val sansTokens = "This has no tokens."
     val names = findNames(
-        listOf(
-            TokenizedSentence("My first name is John.", listOf("John")),
-            TokenizedSentence("My second name is Doe.", listOf("Doe")),
-            TokenizedSentence("This sentence has no tokens.", listOf()),
-            TokenizedSentence("My mom's name is Mary.", listOf("Mary"))
-        )
+        listOf("My first name is John.", "My second name is Doe.", sansTokens, "My mom's name is Mary.")
     ).fold(mutableListOf<ProcessedSentence>()) { accumulator, name ->
         if (name.context.sentence in accumulator.map { it.context.sentence }) return@fold accumulator
         accumulator.apply { add(name) }
@@ -30,7 +29,7 @@ class NameFinderTest : StringSpec({
     }
 
     "A sentence should have its context set to its previous sentence even if the previous sentence is sans tokens" {
-        names[2].context.previous shouldBe "This sentence has no tokens."
+        names[2].context.previous shouldBe sansTokens
     }
 })
 

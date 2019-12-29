@@ -12,11 +12,11 @@ services:
         target: /home/gradle/crystal-skull
         consistency: cached # Prevents Docker for Mac bind mounts from being unusably slow.
       - type: volume
-        source: gradle-cache
+        source: gradle-cache-quiz
         target: /home/gradle/.gradle
   test:
     image: gradle:6.0.1-jdk8
-    entrypoint: bash wait-for-it.sh -t 0 quiz:80 --
+    entrypoint: bash docker/wait-for-it.sh -t 0 quiz:80 --
     command: bash
     volumes:
       - type: bind
@@ -31,7 +31,7 @@ services:
       CRYSTAL_SKULL_URL: http://quiz:80
       SPACY_SERVER_URL: http://nlp:8000
 volumes:
-  gradle-cache:
   # The quiz and test services use the same Gradle dependencies. Since both services need to write to the Gradle cache
   # directory, separate volumes must be used in order to prevent file lock exceptions.
+  gradle-cache-quiz:
   gradle-cache-test:
