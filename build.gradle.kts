@@ -36,6 +36,9 @@ kotlin.sourceSets {
 
 tasks {
     named<Test>("test") { useJUnitPlatform() }
+    withType<Test> {
+        maxParallelForks = (Runtime.getRuntime().availableProcessors() / 2).takeIf { it > 0 } ?: 1
+    }
     withType<Jar> {
         manifest { attributes(mapOf("Main-Class" to application.mainClassName)) }
     }
