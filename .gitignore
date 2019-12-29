@@ -1,7 +1,7 @@
+.DS_Store
 .gradle/
 .idea/
-public/
-out/
-.DS_Store
-redoc-static.html
 build/
+out/
+public/
+redoc-static.html

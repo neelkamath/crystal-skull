@@ -8,7 +8,7 @@
 docker-compose -f docker/docker-compose.yml -f docker/docker-compose.override.yml --project-directory . run --rm test
 ```
 
-The server will be running at `http://localhost:80` and has automatic reload enabled. A bind mount is used to connect the project directory to the container so that you can run commands like `./gradlew test`. Test reports are saved to `build/reports/tests/test/`. Unit and integration tests are saved to `src/test` and `src/intTest` respectively.
+The server will be running at `http://localhost:80` and has automatic reload enabled. A bind mount connects the project directory to the container so that you can run commands like `gradle test`. You can run `gradle dependencyUpdates` to view dependency updates. Test reports save to `build/reports/tests/test/`. `src/test` contains unit tests. `src/intTest` contains integration tests.
 
 ### Production
 

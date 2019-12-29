@@ -11,8 +11,9 @@ import io.kotlintest.shouldBe
 import io.kotlintest.specs.StringSpec
 
 class NameFinderTest : StringSpec({
+    val sansTokens = "This has no tokens."
     val names = findNames(
-        listOf("My first name is John.", "My second name is Doe.", "This has no tokens.", "My mom's name is Mary.")
+        listOf("My first name is John.", "My second name is Doe.", sansTokens, "My mom's name is Mary.")
     ).fold(mutableListOf<ProcessedSentence>()) { accumulator, name ->
         if (name.context.sentence in accumulator.map { it.context.sentence }) return@fold accumulator
         accumulator.apply { add(name) }
@@ -28,7 +29,7 @@ class NameFinderTest : StringSpec({
     }
 
     "A sentence should have its context set to its previous sentence even if the previous sentence is sans tokens" {
-        names[2].context.previous shouldBe "This sentence has no tokens."
+        names[2].context.previous shouldBe sansTokens
     }
 })
 

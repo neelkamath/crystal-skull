@@ -4,7 +4,8 @@ plugins {
     application
     kotlin("jvm") version "1.3.61"
     id("com.github.johnrengelman.shadow") version "5.2.0"
-    id("com.github.breadmoirai.github-release") version "2.2.9"
+    id("com.github.breadmoirai.github-release") version "2.2.10"
+    id("com.github.ben-manes.versions") version "0.27.0"
 }
 
 version = 0
@@ -14,21 +15,19 @@ repositories { jcenter() }
 
 dependencies {
     implementation(kotlin("stdlib-jdk8"))
+    testImplementation("io.kotlintest:kotlintest-runner-junit5:3.4.2")
     implementation("ch.qos.logback:logback-classic:1.2.3")
     implementation("com.neelkamath.kwikipedia:kwikipedia:0.7.2")
     implementation("com.github.javafaker:javafaker:1.0.1")
-    val ktorVersion = "1.2.5"
+    val ktorVersion = "1.2.6"
     implementation("io.ktor:ktor-server-core:$ktorVersion")
     implementation("io.ktor:ktor-server-netty:$ktorVersion")
     implementation("io.ktor:ktor-gson:$ktorVersion")
-    val retrofitVersion = "2.6.2"
+    testImplementation("io.ktor:ktor-server-test-host:$ktorVersion")
+    val retrofitVersion = "2.7.0"
     implementation("com.squareup.retrofit2:retrofit:$retrofitVersion")
     implementation("com.squareup.retrofit2:converter-gson:$retrofitVersion")
-    testImplementation("io.ktor:ktor-server-test-host:$ktorVersion")
-    testImplementation("io.kotlintest:kotlintest-runner-junit5:3.4.2")
 }
-
-val test by tasks.getting(Test::class) { useJUnitPlatform() }
 
 kotlin.sourceSets {
     getByName("main").kotlin.srcDirs("src/main")
@@ -36,6 +35,7 @@ kotlin.sourceSets {
 }
 
 tasks {
+    named<Test>("test") { useJUnitPlatform() }
     withType<Jar> {
         manifest { attributes(mapOf("Main-Class" to application.mainClassName)) }
     }
