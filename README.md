@@ -8,13 +8,19 @@ The name _Crystal Skull_ comes from the movie _[Indiana Jones and the Kingdom of
 
 ## Installation
 
-Install [Docker](https://hub.docker.com/search/?type=edition&offering=community).
-
-You may optionally generate a wrapper for the HTTP API using [OpenAPI Generator](https://openapi-generator.tech/) on the file [`https://raw.githubusercontent.com/neelkamath/crystal-skull/master/docs/openapi.yaml`](https://raw.githubusercontent.com/neelkamath/crystal-skull/master/docs/openapi.yaml).
+1. Install [Docker](https://hub.docker.com/search/?type=edition&offering=community).
+1. Clone the repository using one of the following methods.
+    - SSH: `git clone git@github.com:neelkamath/crystal-skull.git`
+    - HTTPS: `git clone https://github.com/neelkamath/crystal-skull.git`
+1. Optionally, generate a wrapper for the HTTP API using [OpenAPI Generator](https://openapi-generator.tech/) on the file [`https://raw.githubusercontent.com/neelkamath/crystal-skull/master/docs/openapi.yaml`](https://raw.githubusercontent.com/neelkamath/crystal-skull/master/docs/openapi.yaml).
 
 ## Usage
 
-Since the API is currently unstable, you'll have to read the [developer docs](docs/CONTRIBUTING.md) in order to set it up so that you can try it out. Once the API is stable, it'll be available on Docker Hub. You can view the HTTP API docs [here](https://neelkamath.gitlab.io/crystal-skull/).
+```
+docker-compose --project-directory . -f docker/docker-compose.yml -f docker/docker-compose.prod.yml up --build
+```
+   
+The server will be running on `http://localhost:80`.
 
 ## [Contributing](docs/CONTRIBUTING.md)
 
