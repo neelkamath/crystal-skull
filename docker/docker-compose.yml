@@ -8,7 +8,8 @@ services:
     entrypoint: bash docker/wait-for-it.sh -t 0 nlp:8000 --
     depends_on: [nlp]
     networks: [backend]
-    ports: [80:80]
+    ports:
+      - 80:80
     environment:
       SPACY_SERVER_URL: http://nlp:8000
 networks:
