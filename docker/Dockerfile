@@ -20,6 +20,6 @@ COPY --from=builder /app/build/resources/main/ src/main/resources/
 COPY docker/ docker/
 # VisualVM uses port 9010.
 EXPOSE 80 9010
-RUN apk --no-cache add bash curl
+RUN apt-get update && apt-get install bash curl && apt-get clean
 HEALTHCHECK --timeout=5s --start-period=5s --retries=1 \
     CMD curl -f http://localhost:80/health_check
