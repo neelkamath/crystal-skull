@@ -9,7 +9,7 @@ services:
     command: java
       -server
       -XX:+UnlockExperimentalVMOptions
-      -XX:+UseCGroupMemoryLimitForHeap
+      -XX:+UseContainerSupport
       -XX:InitialRAMFraction=2
       -XX:MinRAMFraction=2
       -XX:MaxRAMFraction=2
