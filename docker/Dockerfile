@@ -1,6 +1,6 @@
 # Gradle use carriage returns when logging by default, which aren't visible during Docker builds. Since gradle
 # invocations take several minutes, it looks like it froze. Hence, we set the log level to info to see the progress.
-FROM gradle:6.0.1-jdk8 AS builder
+FROM gradle:6.6.1-jdk14 AS builder
 WORKDIR /app
 # Without this environment variable, Gradle will not cache dependencies. When building this image without cached layers,
 # it would seem that the environment variable is unnecessary, because the second Gradle task uses the cache from the
@@ -13,13 +13,13 @@ RUN gradle --no-daemon -i shadowJar
 COPY src/main/ src/main/
 RUN gradle --no-daemon -i shadowJar
 
-FROM openjdk:8-jre-alpine
+FROM adoptopenjdk:14-jre-hotspot
 WORKDIR /app
 COPY --from=builder /app/build/libs/crystal-skull-all.jar .
 COPY --from=builder /app/build/resources/main/ src/main/resources/
 COPY docker/ docker/
 # VisualVM uses port 9010.
 EXPOSE 80 9010
-RUN apk --no-cache add bash curl
+RUN apt-get update && apt-get install bash curl && apt-get clean
 HEALTHCHECK --timeout=5s --start-period=5s --retries=1 \
     CMD curl -f http://localhost:80/health_check

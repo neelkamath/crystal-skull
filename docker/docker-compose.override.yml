@@ -1,7 +1,7 @@
 version: '3.7'
 services:
   quiz:
-    image: gradle:6.0.1-jdk8
+    image: gradle:6.6.1-jdk14
     command: sh -c 'gradle --no-daemon -t installDist & gradle --no-daemon run'
     # The directory must be named "crystal-skull" because automatic reload watches a directory by that name.
     # The directory must be nested (i.e., "/crystal-skull" will not work).
@@ -15,7 +15,7 @@ services:
         source: gradle-cache-quiz
         target: /home/gradle/.gradle
   test:
-    image: gradle:6.0.1-jdk8
+    image: gradle:6.6.1-jdk14
     entrypoint: bash docker/wait-for-it.sh -t 0 quiz:80 --
     command: bash
     volumes:
